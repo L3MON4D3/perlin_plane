@@ -1,7 +1,10 @@
+#include "Perlin.hpp"
+#include <cairomm/enums.h>
+#include <cairomm/refptr.h>
+#include <cairomm/surface.h>
 #include <iostream>
+#include <cairomm/context.h>
 
 int main(int argc, char** argv){
-    if(argc != 1)
-        for(int i = 0; i != argc; ++i)
-            std::cout << argv[i] << "\n";
+  RandomGenerator::Perlin pln = RandomGenerator::Perlin(20);
 }
