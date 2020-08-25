@@ -2,9 +2,10 @@ add_executable(worldWP
     main.cpp
 )
 
-add_library(Perlin
+add_library(perlin
     Perlin.cpp
 )
 
-target_link_libraries(worldWP PUBLIC Perlin)
-target_link_libraries(worldWP PUBLIC PkgConfig::CAIROMM)
+target_link_libraries(worldWP PUBLIC perlin)
+target_link_libraries(worldWP PUBLIC bgfx)
+target_link_libraries(worldWP PUBLIC PkgConfig::GLFW3)

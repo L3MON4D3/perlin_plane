@@ -27,7 +27,7 @@ double Perlin::grad(int hash, double x, double y, double z) {
  *
  * @return noise, double.
  */
-double Perlin::noiseNoStretch(double x, double y) {
+double Perlin::noise_no_stretch(double x, double y) {
     //cut 3d-noise at "seed".
     double z = seed;
     
