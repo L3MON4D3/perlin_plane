@@ -17,7 +17,7 @@ static void glfw_errorCallback(int error, const char *description)
  * Create new GLFW-Window with dims. GLFW needs to be initialized.
  * @param init Pass empty bgfx::Init.
  */
-GLFWwindow* create_window(int height, int width, bgfx::Init &init) {
+GLFWwindow* create_window(int width, int height, bgfx::Init &init) {
     GLFWwindow *window =
         glfwCreateWindow(width, height, "helloworld", nullptr, nullptr);
 
@@ -42,7 +42,8 @@ int main(int argc, char** argv){
 
     //init should not go out of scope until program finishes.
     bgfx::Init init;
-    GLFWwindow *window = create_window(100, 100, init);
+    int width = 100, height = 100;
+    GLFWwindow *window = create_window(width, height, init);
     bgfx::init(init);
     if (!window) {
         std::cout << "lol";
@@ -55,6 +56,14 @@ int main(int argc, char** argv){
     bgfx::setViewRect(clearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
     while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+        int oldWidth = width, oldHeight = height;
+        glfwGetWindowSize(window, &width, &height);
+        if (width != oldWidth || height != oldHeight) {
+            bgfx::reset(width, height, BGFX_RESET_VSYNC);
+            bgfx::setViewRect(clearView, 0, 0, bgfx::BackbufferRatio::Equal);
+        }
+        
         bgfx::touch(clearView);
         bgfx::frame();
     }
