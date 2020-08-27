@@ -1,7 +1,10 @@
 #include "Perlin.hpp"
+#include "Util.hpp"
+
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
 #include "bgfx/platform.h"
+
 #include <iostream>
 #include <GLFW/glfw3.h>
 
@@ -53,11 +56,6 @@ static const uint16_t cubeTriList[] =
 	6, 3, 7,
 };
 
-static void glfw_errorCallback(int error, const char *description)
-{
-	fprintf(stderr, "GLFW error %d: %s\n", error, description);
-}
-
 /**
  * Create new GLFW-Window with dims width x height. GLFW needs to be initialized.
  * @param init Pass empty bgfx::Init.
@@ -89,12 +87,12 @@ int main(int argc, char** argv){
     RandomGenerator::Perlin pln = RandomGenerator::Perlin(20);
     //Call renderFrame before init (in create_window) to render on this thread.
     renderFrame();
-    glfwSetErrorCallback(glfw_errorCallback);
-    glfwInit();
+    glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     //init should not go out of scope until program finishes.
     int width = 100, height = 100;
+    glfwInit();
     GLFWwindow *window = create_window(width, height);
 
     const ViewId clearView = 0;
@@ -107,6 +105,10 @@ int main(int argc, char** argv){
 
     IndexBufferHandle ibh = createIndexBuffer(
             makeRef(cubeTriList, sizeof(cubeTriList)));
+
+    bgfx::ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
+    bgfx::ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
+    bgfx::ProgramHandle program = createProgram(vsh, fsh, true);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

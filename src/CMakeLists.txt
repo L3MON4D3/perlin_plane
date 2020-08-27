@@ -1,5 +1,6 @@
 add_executable(worldWP
     main.cpp
+    Util.cpp
 )
 
 add_library(perlin
