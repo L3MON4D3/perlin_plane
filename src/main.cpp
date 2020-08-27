@@ -1,9 +1,11 @@
 #include "Perlin.hpp"
 #include "Util.hpp"
+#include "ModelBuilder.hpp"
 
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
 #include "bgfx/platform.h"
+#include "bx/math.h"
 
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -11,25 +13,10 @@
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
 
-struct PosColorVertex {
-    float x, y, z;
-    uint32_t rgba;
 
-    static void init() {
-        layout
-            .begin()
-            .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float      )
-            .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
-            .end();
-    }
+bgfx::VertexLayout worldWp::PosColorVertex::layout;
 
-    static bgfx::VertexLayout layout;
-};
-
-bgfx::VertexLayout PosColorVertex::layout;
-
-static PosColorVertex cubeVertices[] =
-{
+worldWp::PosColorVertex cubeVertices[] = {
 	{-1.0f,  1.0f,  1.0f, 0xff000000 },
 	{ 1.0f,  1.0f,  1.0f, 0xff0000ff },
 	{-1.0f, -1.0f,  1.0f, 0xff00ff00 },
@@ -40,8 +27,7 @@ static PosColorVertex cubeVertices[] =
 	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
 };
 
-static const uint16_t cubeTriList[] =
-{
+const uint16_t cubeTriList[] = {
 	0, 1, 2, // 0
 	1, 3, 2,
 	4, 6, 5, // 2
@@ -63,7 +49,7 @@ static const uint16_t cubeTriList[] =
 GLFWwindow* create_window(int width, int height) {
     //Magic code from entry_glfw.cpp from bgfx.
     GLFWwindow *window =
-        glfwCreateWindow(width, height, "helloworld", nullptr, nullptr);
+        glfwCreateWindow(width, height, "worldWp", nullptr, nullptr);
 
     bgfx::Init init;
 
@@ -86,30 +72,36 @@ int main(int argc, char** argv){
 
     RandomGenerator::Perlin pln = RandomGenerator::Perlin(20);
     //Call renderFrame before init (in create_window) to render on this thread.
-    renderFrame();
+    glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     //init should not go out of scope until program finishes.
-    int width = 100, height = 100;
-    glfwInit();
+    int width = 1000, height = 1000;
+    renderFrame();
     GLFWwindow *window = create_window(width, height);
 
+    worldWp::PosColorVertex::init();
+
     const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR);
+    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
     setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
 
     VertexBufferHandle vbh = createVertexBuffer(
-            makeRef(cubeVertices, sizeof(cubeVertices)),
-            PosColorVertex::layout);
+        makeRef(cubeVertices, sizeof(cubeVertices)),
+        worldWp::PosColorVertex::layout);
 
     IndexBufferHandle ibh = createIndexBuffer(
-            makeRef(cubeTriList, sizeof(cubeTriList)));
+        makeRef(cubeTriList, sizeof(cubeTriList)));
 
-    bgfx::ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
-    bgfx::ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
-    bgfx::ProgramHandle program = createProgram(vsh, fsh, true);
 
+    ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
+    ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
+    ProgramHandle program = createProgram(vsh, fsh, true);
+
+    touch(clearView);
+
+    float pos {-15.0f};
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         int oldWidth = width, oldHeight = height;
@@ -119,7 +111,48 @@ int main(int argc, char** argv){
             setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
         }
 
+        bx::Vec3 at  {0.0f, 0.0f,   0.0f};
+        bx::Vec3 eye {0.0f, 0.0f, -45.0f};
+
+        float view[16];
+        bx::mtxLookAt(view, eye, at);
+
+        float proj[16];
+        bx::mtxProj(proj,
+            90.0f,
+            ((float)width)/height,
+            0.1f,
+            100.0f,
+            bgfx::getCaps()->homogeneousDepth);
+
+        bgfx::setViewTransform(clearView, view, proj);
+        bgfx::setViewRect(clearView, 0, 0, width, height);
+
         touch(clearView);
+
+        float mtx[16];
+        bx::mtxRotateY(mtx, 0.0f);
+        bx::mtxRotateXY(mtx, pos*.1, -pos*.1);
+        mtx[12] = pos+=0.01;
+        mtx[13] = pos+=0.01;
+        mtx[14] = 0.0f;
+
+        bgfx::setTransform(mtx);
+
+        bgfx::setVertexBuffer(0, vbh);
+        bgfx::setIndexBuffer(ibh);
+        bgfx::setState(0
+            | BGFX_STATE_WRITE_R
+            | BGFX_STATE_WRITE_G
+            | BGFX_STATE_WRITE_B
+            | BGFX_STATE_WRITE_A
+            | BGFX_STATE_DEPTH_TEST_LESS
+            | BGFX_STATE_CULL_CW
+            | BGFX_STATE_WRITE_Z
+            | BGFX_STATE_MSAA);
+
+        bgfx::submit(clearView, program);
+
         frame();
     }
 
