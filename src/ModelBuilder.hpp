@@ -21,8 +21,7 @@ public:
 private:
     int x_dim, y_dim;
     PosColorVertex *plane_verts;
-    PosColorVertex *plane_indz;
-    RandomGenerator::Perlin ns_gen;
+    uint16_t *plane_indz;
 };
 };
 
