@@ -1,12 +1,14 @@
 #ifndef MODEL_BUILDER_H_
 #define MODEL_BUILDER_H_
-#include "Perlin.hpp"
+
+#include "FastNoise.h"
 #include "bgfx/bgfx.h"
 
 namespace worldWp {
 
-struct PosColorVertex {
-    float x, y, z;
+struct PosNormalColorVertex {
+    float pos[3];
+	float normal[3];
     uint32_t rgba;
 
     static void init();
@@ -15,13 +17,13 @@ struct PosColorVertex {
 
 class ModelBuilder {
 public:
-    ModelBuilder(int x_dim, int y_dim, RandomGenerator::Perlin ns_gen);
+    ModelBuilder(int x_dim, int y_dim, FastNoise fn);
     bgfx::VertexBufferHandle getVBufferHandle();
     bgfx::IndexBufferHandle getIBufferHandle();
 private:
     int x_dim, y_dim;
-    PosColorVertex *plane_verts;
-    uint16_t *plane_indz;
+    PosNormalColorVertex *plane_verts;
+    uint32_t *plane_indz;
 };
 };
 

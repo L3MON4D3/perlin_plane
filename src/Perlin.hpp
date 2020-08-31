@@ -24,14 +24,14 @@ class Perlin {
 public:
     Perlin(double seed);
     Perlin(double seed, double xS, double yS, double resS);
-    double inline noise_at(double x, double y)
+    inline double noise_at(const double x, const double y) const
         { return resStretch*noise_no_stretch(xStretch*x, yStretch*y); }
 private:
     static inline double fade(double t) { return t*t*t*(t*(t*6-15)+10); }
     static inline double lerp(double t, double a, double b)
         { return a+t*(b-a); }
     static double grad(int, double, double, double);
-    double noise_no_stretch(double x, double y);
+    double noise_no_stretch(const double x, const double y) const;
 
     static constexpr int p[] {PERM_ARR, PERM_ARR};
     double seed, xStretch, yStretch, resStretch;

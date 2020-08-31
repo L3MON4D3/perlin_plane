@@ -7,5 +7,6 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLFW3 REQUIRED IMPORTED_TARGET glfw3)
 
 add_subdirectory(libs/bgfx.cmake)
+add_subdirectory(libs/FastNoise)
 
 add_subdirectory(src)

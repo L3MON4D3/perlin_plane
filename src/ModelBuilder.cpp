@@ -1,22 +1,29 @@
 #include "ModelBuilder.hpp"
+#include "Util.hpp"
+
 #include "bgfx/bgfx.h"
+#include "bx/math.h"
+
+#include <cmath>
 #include <iostream>
+#include <ostream>
 
 namespace worldWp {
 
-void PosColorVertex::init() {
+void PosNormalColorVertex::init() {
     layout
         .begin()
         .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
         .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
         .end();
 }
 
-ModelBuilder::ModelBuilder(int x_dim, int y_dim, RandomGenerator::Perlin ns_gen)
+ModelBuilder::ModelBuilder(const int x_dim, const int y_dim, FastNoise fn)
     : x_dim{x_dim},
       y_dim{y_dim},
-      plane_verts{new PosColorVertex[x_dim*y_dim] },
-      plane_indz{ new uint16_t[(x_dim-1)*(y_dim-1)*12] } {
+      plane_verts{ new PosNormalColorVertex[x_dim*y_dim] },
+      plane_indz{ new uint32_t[(x_dim-1)*(y_dim-1)*12] } {
 
 	//fill plane_verts with values from ns_gen.
     //indx = i*j;
@@ -25,21 +32,29 @@ ModelBuilder::ModelBuilder(int x_dim, int y_dim, RandomGenerator::Perlin ns_gen)
         for(int j = 0; j != y_dim; ++j, ++indx)
             plane_verts[indx] = {(float) i,
                                  (float) j, 
-                                 (float) ns_gen.noise_at(i, j), 
-                                 0xffffffff};
+                                 (float) 80*fn.GetNoise(i*2, j*2),
+	                         0, 0, 0,
+	                         0xffcccccc};
 
+	for(int i = 0; i != (x_dim-1)*y_dim; ++i)
+	    worldWp::util::add_normal(&plane_verts[i],
+		//pass pos of each Vertex
+		(float*) &plane_verts[i+1],
+		(float*) &plane_verts[i+y_dim]);
+	
+	
     //fill plane_indz.
     {
         int plane_x_dim = x_dim-1,
             plane_y_dim = y_dim-1;
-		for(int i = 0; i != plane_x_dim; ++i)
-			for(int j = 0; j != plane_y_dim; ++j) {
-                int vert_start_indx = (i*y_dim + j);
+	for(int i = 0; i != plane_x_dim; ++i)
+	    for(int j = 0; j != plane_y_dim; ++j) {
+                int vert_start_indx {i*x_dim + j};
 
                 //init vertices for triangles.
                 int v1 = vert_start_indx,
                     v2 = v1+1,
-                    v3 = vert_start_indx+x_dim,
+                    v3 = vert_start_indx+y_dim,
                     v4 = v3+1;
 
                 int tri_start_indx = (i*plane_x_dim + j) * 12;
@@ -66,13 +81,13 @@ ModelBuilder::ModelBuilder(int x_dim, int y_dim, RandomGenerator::Perlin ns_gen)
 
 bgfx::IndexBufferHandle ModelBuilder::getIBufferHandle() {
     return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
-        (x_dim-1)*(y_dim-1)*12*sizeof(uint16_t)));
+        (x_dim-1)*(y_dim-1)*12*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 }
 
 bgfx::VertexBufferHandle ModelBuilder::getVBufferHandle() {
     return bgfx::createVertexBuffer(
         bgfx::makeRef(plane_verts,
-             x_dim*y_dim*sizeof(PosColorVertex)),
-             PosColorVertex::layout);
+             x_dim*y_dim*sizeof(PosNormalColorVertex)),
+             PosNormalColorVertex::layout);
 }
 };

@@ -1,12 +1,13 @@
 #include "Perlin.hpp"
 #include <cmath>
+#include <iostream>
 
 namespace RandomGenerator {
 const int Perlin::p[];
 
 Perlin::Perlin(double) {
     //Don't stretch by default.
-    Perlin(seed, 1, 1, 1);
+    Perlin(seed, 1.0, 1.0, 1.0);
 }
 
 Perlin::Perlin(double seed, double xS, double yS, double resS)
@@ -27,13 +28,13 @@ double Perlin::grad(int hash, double x, double y, double z) {
  *
  * @return noise, double.
  */
-double Perlin::noise_no_stretch(double x, double y) {
+double Perlin::noise_no_stretch(double x, double y) const {
     //cut 3d-noise at "seed".
     double z = seed;
     
-    int xU = (int)std::floor(x) & 255,
-        yU = (int)std::floor(y) & 255,
-        zU = (int)std::floor(z) & 255;
+    int xU {(int)std::floor(x) & 255},
+        yU {(int)std::floor(y) & 255},
+        zU {(int)std::floor(z) & 255};
 
     x -= std::floor(x);
     y -= std::floor(y);

@@ -1,4 +1,3 @@
-#include "Perlin.hpp"
 #include "Util.hpp"
 #include "ModelBuilder.hpp"
 
@@ -14,13 +13,13 @@
 #include <GLFW/glfw3native.h>
 
 
-bgfx::VertexLayout worldWp::PosColorVertex::layout;
+bgfx::VertexLayout worldWp::PosNormalColorVertex::layout;
 
-worldWp::PosColorVertex cubeVertices[] = {
-	{-1.0f, -1.0f,  0.0f, 0xff000000 },
-	{-1.0f,  1.0f,  0.0f, 0xff0000ff },
-	{ 1.0f,  1.0f,  0.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f,  0.0f, 0xff00ffff },
+worldWp::PosNormalColorVertex cubeVertices[] = {
+    {-1.0f, -1.0f,  0.0f, 0, 0, 0, 0xff000000 },
+    {-1.0f,  1.0f,  0.0f, 0, 0, 0, 0xff0000ff },
+    { 1.0f,  1.0f,  0.0f, 0, 0, 0, 0xff00ff00 },
+    { 1.0f, -1.0f,  0.0f, 0, 0, 0, 0xff00ffff },
 };
 
 const uint16_t cubeTriList[] = {
@@ -33,7 +32,6 @@ const uint16_t cubeTriList[] = {
  * @param init Pass empty bgfx::Init.
  */
 GLFWwindow* create_window(int width, int height) {
-    //Magic code from entry_glfw.cpp from bgfx.
     GLFWwindow *window =
         glfwCreateWindow(width, height, "worldWp", nullptr, nullptr);
 
@@ -56,8 +54,10 @@ int main(int argc, char** argv){
     //using so lines dont get too long.
     using namespace bgfx;
 
-    RandomGenerator::Perlin pln(345, .1, .1, 10);
-    worldWp::ModelBuilder builder(10, 10, pln);
+    FastNoise fn;
+    fn.SetNoiseType(FastNoise::Perlin);
+    fn.SetSeed(42345);
+    worldWp::ModelBuilder builder(500, 500, fn);
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
@@ -68,21 +68,20 @@ int main(int argc, char** argv){
     renderFrame();
     GLFWwindow *window = create_window(width, height);
 
-    worldWp::PosColorVertex::init();
+    worldWp::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
     setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
     setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
 
     VertexBufferHandle vbh = builder.getVBufferHandle();
-    //VertexBufferHandle vbh = createVertexBuffer(
-    //    makeRef(cubeVertices, sizeof(cubeVertices)),
-    //    worldWp::PosColorVertex::layout);
+        //VertexBufferHandle vbh = createVertexBuffer(
+        //    makeRef(cubeVertices, sizeof(cubeVertices)),
+        //    worldWp::PosNormalColorVertex::layout);
 
     IndexBufferHandle ibh = builder.getIBufferHandle();
     //IndexBufferHandle ibh = createIndexBuffer(
-    //    makeRef(cubeTriList, sizeof(cubeTriList)));
-
+        //	makeRef(cubeTriList, sizeof(cubeTriList)));
 
     ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
     ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
@@ -101,17 +100,17 @@ int main(int argc, char** argv){
         }
 
         bx::Vec3 at  {0.0f, 0.0f,   0.0f};
-        bx::Vec3 eye {0.0f, 0.0f, -25.0f};
+        bx::Vec3 eye {0.0f, 0.0f, -200.0f};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);
 
         float proj[16];
         bx::mtxProj(proj,
-            90.0f,
+            90.0,
             ((float)width)/height,
             0.1f,
-            100.0f,
+            400.0f,
             bgfx::getCaps()->homogeneousDepth);
 
         bgfx::setViewTransform(clearView, view, proj);
@@ -121,11 +120,11 @@ int main(int argc, char** argv){
 
         float mtx[16];
         bx::mtxRotateY(mtx, 0.0f);
-        //bx::mtxRotateXY(mtx, pos*.1, -pos*.1);
-        pos+=0.01;
-        //mtx[12] = pos+=0.01;
-        //mtx[13] = pos+=0.01;
-        //mtx[14] = 0.0f;
+        bx::mtxRotateXY(mtx, pos*.1, pos*.1);
+	pos += 0.001;
+        mtx[12] = -250;
+        mtx[13] = -250;
+        mtx[14] = -10;
 
         bgfx::setTransform(mtx);
 
