@@ -57,7 +57,7 @@ int main(int argc, char** argv){
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(42345);
-    worldWp::ModelBuilder builder(500, 500, fn);
+    worldWp::ModelBuilder builder(10, 10, fn, 20);
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);

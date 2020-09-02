@@ -19,7 +19,7 @@ void PosNormalColorVertex::init() {
         .end();
 }
 
-ModelBuilder::ModelBuilder(const int x_dim, const int y_dim, FastNoise fn)
+ModelBuilder::ModelBuilder(const int x_dim, const int y_dim, FastNoise fn, int vert_dist)
     : x_dim{x_dim},
       y_dim{y_dim},
       plane_verts{ new PosNormalColorVertex[x_dim*y_dim] },
@@ -28,8 +28,8 @@ ModelBuilder::ModelBuilder(const int x_dim, const int y_dim, FastNoise fn)
 	//fill plane_verts with values from ns_gen.
     //indx = i*j;
     int indx = 0;
-    for(int i = 0; i != x_dim; ++i)
-        for(int j = 0; j != y_dim; ++j, ++indx)
+    for(int i = 0; i != x_dim*vert_dist; i+=vert_dist)
+        for(int j = 0; j != y_dim*vert_dist; j+=vert_dist, ++indx)
             plane_verts[indx] = {(float) i,
                                  (float) j, 
                                  (float) 80*fn.GetNoise(i*2, j*2),

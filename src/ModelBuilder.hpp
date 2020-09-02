@@ -17,7 +17,7 @@ struct PosNormalColorVertex {
 
 class ModelBuilder {
 public:
-    ModelBuilder(int x_dim, int y_dim, FastNoise fn);
+    ModelBuilder(int x_dim, int y_dim, FastNoise fn, int vert_dist);
     bgfx::VertexBufferHandle getVBufferHandle();
     bgfx::IndexBufferHandle getIBufferHandle();
 private:
