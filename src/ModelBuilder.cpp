@@ -32,9 +32,9 @@ ModelBuilder::ModelBuilder(const int x_dim, const int y_dim, FastNoise fn, int v
         for(int j = 0; j != y_dim*vert_dist; j+=vert_dist, ++indx)
             plane_verts[indx] = {(float) i,
                                  (float) j, 
-                                 (float) 80*fn.GetNoise(i*2, j*2),
-	                         0, 0, 0,
-	                         0xffcccccc};
+                                 (float) 60*fn.GetNoise(i*2, j*2),
+								 0, 0, 0,
+								 0xffaaaaaa};
 
 	for(int i = 0; i != (x_dim-1)*y_dim; ++i)
 	    worldWp::util::add_normal(&plane_verts[i],
@@ -47,8 +47,8 @@ ModelBuilder::ModelBuilder(const int x_dim, const int y_dim, FastNoise fn, int v
     {
         int plane_x_dim = x_dim-1,
             plane_y_dim = y_dim-1;
-	for(int i = 0; i != plane_x_dim; ++i)
-	    for(int j = 0; j != plane_y_dim; ++j) {
+		for(int i = 0; i != plane_x_dim; ++i)
+			for(int j = 0; j != plane_y_dim; ++j) {
                 int vert_start_indx {i*x_dim + j};
 
                 //init vertices for triangles.
@@ -90,4 +90,5 @@ bgfx::VertexBufferHandle ModelBuilder::getVBufferHandle() {
              x_dim*y_dim*sizeof(PosNormalColorVertex)),
              PosNormalColorVertex::layout);
 }
+
 };

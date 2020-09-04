@@ -50,14 +50,18 @@ GLFWwindow* create_window(int width, int height) {
     return window;
 }
 
+std::ostream& operator<<(std::ostream& out, const bx::Vec3& v) {
+	return out << "{" << v.x << ", " << v.y << ", " << v.z << "}";
+}
+
 int main(int argc, char** argv){
     //using so lines dont get too long.
     using namespace bgfx;
 
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
-    fn.SetSeed(42345);
-    worldWp::ModelBuilder builder(10, 10, fn, 20);
+    fn.SetSeed(23454234);
+    worldWp::ModelBuilder builder(10, 10, fn, 8);
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
@@ -71,17 +75,17 @@ int main(int argc, char** argv){
     worldWp::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x000000ff, 1.0f, 0);
+    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x444444ff, 1.0f, 0);
     setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
 
     VertexBufferHandle vbh = builder.getVBufferHandle();
-        //VertexBufferHandle vbh = createVertexBuffer(
-        //    makeRef(cubeVertices, sizeof(cubeVertices)),
-        //    worldWp::PosNormalColorVertex::layout);
+    //VertexBufferHandle vbh = createVertexBuffer(
+    //    makeRef(cubeVertices, sizeof(cubeVertices)),
+    //    worldWp::PosNormalColorVertex::layout);
 
     IndexBufferHandle ibh = builder.getIBufferHandle();
     //IndexBufferHandle ibh = createIndexBuffer(
-        //	makeRef(cubeTriList, sizeof(cubeTriList)));
+    //	makeRef(cubeTriList, sizeof(cubeTriList)));
 
     ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
     ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
@@ -100,7 +104,7 @@ int main(int argc, char** argv){
         }
 
         bx::Vec3 at  {0.0f, 0.0f,   0.0f};
-        bx::Vec3 eye {0.0f, 0.0f, -200.0f};
+        bx::Vec3 eye {0.0f, -50.0f, -100.0f};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);
@@ -110,7 +114,7 @@ int main(int argc, char** argv){
             90.0,
             ((float)width)/height,
             0.1f,
-            400.0f,
+            800.0f,
             bgfx::getCaps()->homogeneousDepth);
 
         bgfx::setViewTransform(clearView, view, proj);
@@ -120,10 +124,10 @@ int main(int argc, char** argv){
 
         float mtx[16];
         bx::mtxRotateY(mtx, 0.0f);
-        bx::mtxRotateXY(mtx, pos*.1, pos*.1);
-	pos += 0.001;
-        mtx[12] = -250;
-        mtx[13] = -250;
+        //bx::mtxRotateXY(mtx, pos*.1, pos*.1);
+		pos += 0.01;
+        mtx[12] = -20;
+        mtx[13] = -20;
         mtx[14] = -10;
 
         bgfx::setTransform(mtx);
