@@ -54,13 +54,13 @@ std::ostream& operator<<(std::ostream& out, const bx::Vec3& v) {
 	return out << "{" << v.x << ", " << v.y << ", " << v.z << "}";
 }
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
     //using so lines dont get too long.
     using namespace bgfx;
 
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
-    fn.SetSeed(23454234);
+    fn.SetSeed(2345424);
     worldWp::ModelBuilder builder(10, 10, fn, 8);
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
@@ -104,7 +104,7 @@ int main(int argc, char** argv){
         }
 
         bx::Vec3 at  {0.0f, 0.0f,   0.0f};
-        bx::Vec3 eye {0.0f, -50.0f, -100.0f};
+        bx::Vec3 eye {0.0f, -50.0f+pos, -100.0f};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);
