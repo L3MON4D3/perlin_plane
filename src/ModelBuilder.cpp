@@ -39,7 +39,7 @@ ModelBuilder::ModelBuilder(const int x_dim, const int y_dim,
 									    (float) j, 
 			                            (float) 60*fn.GetNoise(i*2, j*2),
 			                            0, 0, 0,
-			                            0xffaaaaaa};
+			                            0xff666666};
 
 	for(int i = 0; i != (x_dim-1)*y_dim; ++i) {
 	    worldWp::util::add_normal(&plane_verts[i],
@@ -70,22 +70,22 @@ ModelBuilder::ModelBuilder(const int x_dim, const int y_dim,
 
                 int tri_start_indx = (i*plane_x_dim + j) * 12;
                 //first Triangle of "square".
-                plane_indz[tri_start_indx   ] = v1;
-                plane_indz[tri_start_indx+ 1] = v3;
-                plane_indz[tri_start_indx+ 2] = v2;
+                plane_indz[tri_start_indx   ] = v3;
+                plane_indz[tri_start_indx+ 1] = v2;
+                plane_indz[tri_start_indx+ 2] = v1;
 
-                plane_indz[tri_start_indx+ 3] = v1;
-                plane_indz[tri_start_indx+ 4] = v2;
-                plane_indz[tri_start_indx+ 5] = v3;
+                plane_indz[tri_start_indx+ 3] = v2;
+                plane_indz[tri_start_indx+ 4] = v3;
+                plane_indz[tri_start_indx+ 5] = v1;
 
                 //second Triangle of "square".
-                plane_indz[tri_start_indx+ 6] = v2+offset;
-                plane_indz[tri_start_indx+ 7] = v3+offset;
-                plane_indz[tri_start_indx+ 8] = v4+offset;
+                plane_indz[tri_start_indx+ 6] = v3+offset;
+                plane_indz[tri_start_indx+ 7] = v4+offset;
+                plane_indz[tri_start_indx+ 8] = v2+offset;
 
-                plane_indz[tri_start_indx+ 9] = v2+offset;
-                plane_indz[tri_start_indx+10] = v4+offset;
-                plane_indz[tri_start_indx+11] = v3+offset;
+                plane_indz[tri_start_indx+ 9] = v4+offset;
+                plane_indz[tri_start_indx+10] = v3+offset;
+                plane_indz[tri_start_indx+11] = v2+offset;
             }
     }
 }
