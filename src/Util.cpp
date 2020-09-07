@@ -8,6 +8,15 @@
 namespace worldWp {
 namespace util {
 
+void PosNormalColorVertex::init() {
+    layout
+        .begin()
+        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
+        .end();
+}
+
 bgfx::ShaderHandle load_shader(const char *name) {
     char *data = new char[2048];
     std::ifstream file;
@@ -37,7 +46,7 @@ bx::Vec3 triangle_normal(bx::Vec3 t, bx::Vec3 a, bx::Vec3 b) {
 }
 
 //adds normal-component to Vertex vert_target.
-void add_normal(worldWp::PosNormalColorVertex *vert_target,
+void add_normal(PosNormalColorVertex *vert_target,
     float const *vert_a, float const *vert_b) {
 	
     float *fl_target = (float*) vert_target;

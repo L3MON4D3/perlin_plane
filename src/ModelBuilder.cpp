@@ -1,8 +1,4 @@
 #include "ModelBuilder.hpp"
-#include "Util.hpp"
-
-#include "bgfx/bgfx.h"
-#include "bx/math.h"
 
 #include <cmath>
 #include <iostream>
@@ -10,20 +6,11 @@
 
 namespace worldWp {
 
-void PosNormalColorVertex::init() {
-    layout
-        .begin()
-        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-		.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Float)
-        .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
-        .end();
-}
-
-ModelBuilder::ModelBuilder(ModelSpecs ms, FastNoise fn, NoiseMods nm)
+ModelBuilder::ModelBuilder(ModelSpecs ms, FastNoise fn, worldWp::util::NoiseMods nm)
     : ms{ms},
 	  nm{nm},
 	  //double space, store duplicate indizes ith different normals.
-      plane_verts{ new PosNormalColorVertex[ms.x_dim*ms.y_dim*2] },
+      plane_verts{ new worldWp::util::PosNormalColorVertex[ms.x_dim*ms.y_dim*2] },
       plane_indz{ new uint32_t[(ms.x_dim-1)*(ms.y_dim-1)*12] } {
 
 	//fill plane_verts with values from ns_gen.
@@ -102,8 +89,8 @@ bgfx::IndexBufferHandle ModelBuilder::getIBufferHandle() {
 bgfx::VertexBufferHandle ModelBuilder::getVBufferHandle() {
     return bgfx::createVertexBuffer(
         bgfx::makeRef(plane_verts,
-             ms.x_dim*ms.y_dim*2*sizeof(PosNormalColorVertex)),
-             PosNormalColorVertex::layout);
+             ms.x_dim*ms.y_dim*2*sizeof(worldWp::util::PosNormalColorVertex)),
+             worldWp::util::PosNormalColorVertex::layout);
 }
 
 };

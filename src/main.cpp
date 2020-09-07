@@ -13,9 +13,9 @@
 #include <GLFW/glfw3native.h>
 
 
-bgfx::VertexLayout worldWp::PosNormalColorVertex::layout;
+bgfx::VertexLayout worldWp::util::PosNormalColorVertex::layout;
 
-worldWp::PosNormalColorVertex cubeVertices[] = {
+worldWp::util::PosNormalColorVertex cubeVertices[] = {
     {-1.0f, -1.0f,  0.0f, 0, 0, 0, 0xff000000 },
     {-1.0f,  1.0f,  0.0f, 0, 0, 0, 0xff0000ff },
     { 1.0f,  1.0f,  0.0f, 0, 0, 0, 0xff00ff00 },
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     renderFrame();
     GLFWwindow *window = create_window(width, height);
 
-    worldWp::PosNormalColorVertex::init();
+    worldWp::util::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
     setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111ff, 1.0f, 0);
