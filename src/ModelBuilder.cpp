@@ -19,53 +19,41 @@ void PosNormalColorVertex::init() {
         .end();
 }
 
-ModelBuilder::ModelBuilder(const int x_dim, const int y_dim,
-	FastNoise fn, int vert_dist)
-
-    : x_dim{x_dim},
-      y_dim{y_dim},
+ModelBuilder::ModelBuilder(ModelSpecs ms, FastNoise fn, NoiseMods nm)
+    : ms{ms},
+	  nm{nm},
 	  //double space, store duplicate indizes ith different normals.
-      plane_verts{ new PosNormalColorVertex[x_dim*y_dim*2] },
-      plane_indz{ new uint32_t[(x_dim-1)*(y_dim-1)*12] } {
+      plane_verts{ new PosNormalColorVertex[ms.x_dim*ms.y_dim*2] },
+      plane_indz{ new uint32_t[(ms.x_dim-1)*(ms.y_dim-1)*12] } {
 
 	//fill plane_verts with values from ns_gen.
     //indx = i*j at any point in loop.
     int indx = 0;
-	int offset = x_dim*y_dim;
-    for(int i = 0; i != x_dim*vert_dist; i+=vert_dist)
-        for(int j = 0; j != y_dim*vert_dist; j+=vert_dist, ++indx)
+	int offset = ms.x_dim*ms.y_dim;
+    for(int i = 0; i != ms.x_dim*ms.res; i+=ms.res)
+        for(int j = 0; j != ms.y_dim*ms.res; j+=ms.res, ++indx)
             plane_verts[indx+offset] =
 			plane_verts[indx       ] = {(float) i,
 									    (float) j, 
-			                            (float) 60*fn.GetNoise(i*2, j*2),
+			                            (float) nm.res_stretch*fn.GetNoise(
+											i*nm.x_stretch,
+											j*nm.y_stretch ),
 			                            0, 0, 0,
-			                            0xff666666};
+			                            0xff666666 };
+	add_normals();
 
-	for(int i = 0; i != (x_dim-1)*y_dim; ++i) {
-	    worldWp::util::add_normal(&plane_verts[i],
-		//pass pos of each Vertex
-		(float*) &plane_verts[i+1],
-		(float*) &plane_verts[i+y_dim]);
-
-		//add normals to "downward-pointing" triangle.
-		int i_offset = offset+i+1;
-	    worldWp::util::add_normal(&plane_verts[i_offset],
-		(float*) &plane_verts[i_offset+y_dim],
-		(float*) &plane_verts[i_offset+y_dim-1]);
-	}
-	
     //fill plane_indz.
     {
-        int plane_x_dim = x_dim-1,
-            plane_y_dim = y_dim-1;
+        int plane_x_dim = ms.x_dim-1,
+            plane_y_dim = ms.y_dim-1;
 		for(int i = 0; i != plane_x_dim; ++i)
 			for(int j = 0; j != plane_y_dim; ++j) {
-                int vert_start_indx {i*x_dim + j};
+                int vert_start_indx {i*ms.x_dim + j};
 
                 //init vertices for triangles.
                 int v1 = vert_start_indx,
                     v2 = v1+1,
-                    v3 = vert_start_indx+y_dim,
+                    v3 = vert_start_indx+ms.y_dim,
                     v4 = v3+1;
 
                 int tri_start_indx = (i*plane_x_dim + j) * 12;
@@ -90,15 +78,31 @@ ModelBuilder::ModelBuilder(const int x_dim, const int y_dim,
     }
 }
 
+void ModelBuilder::add_normals() {
+	for(int i = 0; i != (ms.x_dim-1)*ms.y_dim; ++i) {
+	    worldWp::util::add_normal(&plane_verts[i],
+		//pass pos of each Vertex
+		(float*) &plane_verts[i+1],
+		(float*) &plane_verts[i+ms.y_dim]);
+
+		//add normals to "downward-pointing" triangle.
+		int i_offset = ms.x_dim*ms.y_dim+i+1;
+	    worldWp::util::add_normal(&plane_verts[i_offset],
+		(float*) &plane_verts[i_offset+ms.y_dim],
+		(float*) &plane_verts[i_offset+ms.y_dim-1]);
+	}
+}
+	
+
 bgfx::IndexBufferHandle ModelBuilder::getIBufferHandle() {
     return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
-        (x_dim-1)*(y_dim-1)*12*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
+        (ms.x_dim-1)*(ms.y_dim-1)*12*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 }
 
 bgfx::VertexBufferHandle ModelBuilder::getVBufferHandle() {
     return bgfx::createVertexBuffer(
         bgfx::makeRef(plane_verts,
-             x_dim*y_dim*2*sizeof(PosNormalColorVertex)),
+             ms.x_dim*ms.y_dim*2*sizeof(PosNormalColorVertex)),
              PosNormalColorVertex::layout);
 }
 

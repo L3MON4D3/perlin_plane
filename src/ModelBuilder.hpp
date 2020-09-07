@@ -15,17 +15,32 @@ struct PosNormalColorVertex {
     static bgfx::VertexLayout layout;
 };
 
+struct ModelSpecs {
+	int x_dim,
+	    y_dim,
+	    res;
+};
+
+struct NoiseMods {
+	float x_stretch,
+	      y_stretch,
+	      res_stretch;
+};
+
 class ModelBuilder {
 public:
-    ModelBuilder(int x_dim, int y_dim, FastNoise fn, int vert_dist);
+    ModelBuilder(ModelSpecs ms, FastNoise fn, NoiseMods nm);
     bgfx::VertexBufferHandle getVBufferHandle();
     bgfx::IndexBufferHandle getIBufferHandle();
 private:
-    int x_dim, y_dim;
+	ModelSpecs ms;
+	NoiseMods nm;
     PosNormalColorVertex *plane_verts;
     uint32_t *plane_indz;
-};
+
+	void add_normals();
 };
 
+};
 
 #endif

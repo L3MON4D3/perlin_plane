@@ -60,8 +60,8 @@ int main(int argc, char** argv) {
 
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
-    fn.SetSeed(2345424);
-    worldWp::ModelBuilder builder(10, 10, fn, 8);
+    fn.SetSeed(2454244);
+    worldWp::ModelBuilder builder( {10, 10, 9}, fn, {1, 1, 80} );
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     worldWp::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x444444ff, 1.0f, 0);
+    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111ff, 1.0f, 0);
     setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
 
     VertexBufferHandle vbh = builder.getVBufferHandle();
@@ -103,8 +103,8 @@ int main(int argc, char** argv) {
             setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
         }
 
-        bx::Vec3 at  {0.0f, 0.0f,   0.0f};
-        bx::Vec3 eye {0.0f, -50.0f+pos, -100.0f};
+        bx::Vec3 at  { pos,    pos,       0};
+        bx::Vec3 eye {0.0f, -10.0f, -100.0f};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);
@@ -124,8 +124,7 @@ int main(int argc, char** argv) {
 
         float mtx[16];
         bx::mtxRotateY(mtx, 0.0f);
-        //bx::mtxRotateXY(mtx, pos*.1, pos*.1);
-		pos += 0.01;
+		pos += 0.1;
         mtx[12] = -20;
         mtx[13] = -20;
         mtx[14] = -10;
