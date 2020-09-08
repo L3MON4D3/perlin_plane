@@ -61,8 +61,9 @@ int main(int argc, char** argv) {
 
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
-    fn.SetSeed(2454244);
-    worldWp::ModelBuilder builder( {10, 10, 9}, fn, {2, 2, 80} );
+    fn.SetSeed(std::rand());
+	int pl_height{100}, pl_width{100};
+    worldWp::ModelBuilder builder( {pl_width, pl_height, 9}, fn, {2, 2, 80} );
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
@@ -116,7 +117,7 @@ int main(int argc, char** argv) {
 			fn.SetSeed(std::rand());
 			float* new_noise = builder.get_raw_noise(fn);
 
-			offset_noise = new float[10*10];
+			offset_noise = new float[pl_width*pl_height];
 			builder.for_each_vertex(
 				[new_noise, offset_noise](worldWp::util::PosNormalColorVertex& v, int i) {
 					//offset_nose is difference between new and old noise.
