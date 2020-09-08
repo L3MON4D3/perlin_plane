@@ -1,4 +1,5 @@
 #include "ModelBuilder.hpp"
+#include "Util.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -87,6 +88,15 @@ void ModelBuilder::add_vertices(const FastNoise& fn) {
 			                            0xff666666 };
 }
 
+float* ModelBuilder::get_raw_noise(const FastNoise& fn) {
+	float* ns = new float[ms.x_dim*ms.y_dim];
+
+	int indx = 0;
+    for(int i = 0; i != ms.x_dim*ms.res; i+=ms.res)
+        for(int j = 0; j != ms.y_dim*ms.res; j+=ms.res, ++indx)
+			ns[indx] = util::get_noise_mdfd(i, j, fn, nm);
+	return ns;
+}
 
 bgfx::IndexBufferHandle ModelBuilder::getIBufferHandle() {
     return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
@@ -98,6 +108,16 @@ bgfx::VertexBufferHandle ModelBuilder::getVBufferHandle() {
         bgfx::makeRef(plane_verts,
 			ms.x_dim*ms.y_dim*2*sizeof(worldWp::util::PosNormalColorVertex)),
 			worldWp::util::PosNormalColorVertex::layout);
+}
+
+void ModelBuilder::for_each_vertex(
+  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn
+) {
+	for(int i{0}; i != ms.x_dim*ms.y_dim; ++i) {
+		//apply function to both vertices (each vertex exists twice for normals).
+		fn(plane_verts[i], i);
+		fn(plane_verts[i+ms.x_dim*ms.y_dim], i);
+	}
 }
 
 };

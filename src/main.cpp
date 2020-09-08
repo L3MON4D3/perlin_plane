@@ -6,6 +6,7 @@
 #include "bgfx/platform.h"
 #include "bx/math.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <GLFW/glfw3.h>
 
@@ -61,7 +62,7 @@ int main(int argc, char** argv) {
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(2454244);
-    worldWp::ModelBuilder builder( {10, 10, 9}, fn, {1, 1, 80} );
+    worldWp::ModelBuilder builder( {10, 10, 9}, fn, {2, 2, 80} );
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
@@ -94,7 +95,14 @@ int main(int argc, char** argv) {
     touch(clearView);
 
     float pos {-15.0f};
+
+
+	int frame_ctr{-1};
     while (!glfwWindowShouldClose(window)) {
+		++frame_ctr;
+		if (frame_ctr == 1000)
+			frame_ctr = 0;
+		
         glfwPollEvents();
         int oldWidth = width, oldHeight = height;
         glfwGetWindowSize(window, &width, &height);
@@ -103,8 +111,28 @@ int main(int argc, char** argv) {
             setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
         }
 
-        bx::Vec3 at  { pos,    pos,       0};
-        bx::Vec3 eye {0.0f, -10.0f, -100.0f};
+		float* offset_noise;
+		if (frame_ctr == 0) {
+			fn.SetSeed(std::rand());
+			float* new_noise = builder.get_raw_noise(fn);
+
+			offset_noise = new float[10*10];
+			builder.for_each_vertex(
+				[new_noise, offset_noise](worldWp::util::PosNormalColorVertex& v, int i) {
+					//offset_nose is difference between new and old noise.
+					offset_noise[i] = (new_noise[i] - v.pos[2])*.001;
+			});
+		}
+
+		builder.for_each_vertex(
+			[offset_noise](worldWp::util::PosNormalColorVertex& v, int i) {
+				v.pos[2]+=offset_noise[i];
+		});
+		builder.add_normals();
+		vbh = builder.getVBufferHandle();
+
+        bx::Vec3 at  {0, 0,    0};
+        bx::Vec3 eye {0, 0, -100};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);

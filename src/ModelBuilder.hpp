@@ -6,6 +6,8 @@
 #include "FastNoise.h"
 #include "bgfx/bgfx.h"
 
+#include <functional>
+
 namespace worldWp {
 
 struct ModelSpecs {
@@ -23,6 +25,10 @@ public:
 
     bgfx::VertexBufferHandle getVBufferHandle();
     bgfx::IndexBufferHandle getIBufferHandle();
+	void for_each_vertex(
+	  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn);
+	float* get_raw_noise(const FastNoise& fn);
+	void add_normals();
 private:
 	ModelSpecs ms;
 	worldWp::util::NoiseMods nm;
@@ -30,7 +36,6 @@ private:
     uint32_t *plane_indz;
 
 	void add_vertices(const FastNoise& fn);
-	void add_normals();
 };
 
 };
