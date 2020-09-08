@@ -16,7 +16,11 @@ struct ModelSpecs {
 
 class ModelBuilder {
 public:
-    ModelBuilder(ModelSpecs ms, FastNoise fn, worldWp::util::NoiseMods nm);
+    ModelBuilder(
+	  const ModelSpecs& ms,
+	  const FastNoise& fn,
+	  const worldWp::util::NoiseMods& nm );
+
     bgfx::VertexBufferHandle getVBufferHandle();
     bgfx::IndexBufferHandle getIBufferHandle();
 private:
@@ -25,6 +29,7 @@ private:
 	worldWp::util::PosNormalColorVertex *plane_verts;
     uint32_t *plane_indz;
 
+	void add_vertices(const FastNoise& fn);
 	void add_normals();
 };
 

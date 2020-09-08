@@ -6,31 +6,23 @@
 
 namespace worldWp {
 
-ModelBuilder::ModelBuilder(ModelSpecs ms, FastNoise fn, worldWp::util::NoiseMods nm)
+ModelBuilder::ModelBuilder(
+  const ModelSpecs& ms,
+  const FastNoise& fn,
+  const worldWp::util::NoiseMods& nm
+)
     : ms{ms},
 	  nm{nm},
 	  //double space, store duplicate indizes ith different normals.
       plane_verts{ new worldWp::util::PosNormalColorVertex[ms.x_dim*ms.y_dim*2] },
       plane_indz{ new uint32_t[(ms.x_dim-1)*(ms.y_dim-1)*12] } {
 
-	//fill plane_verts with values from ns_gen.
-    //indx = i*j at any point in loop.
-    int indx = 0;
-	int offset = ms.x_dim*ms.y_dim;
-    for(int i = 0; i != ms.x_dim*ms.res; i+=ms.res)
-        for(int j = 0; j != ms.y_dim*ms.res; j+=ms.res, ++indx)
-            plane_verts[indx+offset] =
-			plane_verts[indx       ] = {(float) i,
-									    (float) j, 
-			                            (float) nm.res_stretch*fn.GetNoise(
-											i*nm.x_stretch,
-											j*nm.y_stretch ),
-			                            0, 0, 0,
-			                            0xff666666 };
+	add_vertices(fn);
 	add_normals();
 
     //fill plane_indz.
     {
+		int offset = ms.x_dim*ms.y_dim;
         int plane_x_dim = ms.x_dim-1,
             plane_y_dim = ms.y_dim-1;
 		for(int i = 0; i != plane_x_dim; ++i)
@@ -68,18 +60,33 @@ ModelBuilder::ModelBuilder(ModelSpecs ms, FastNoise fn, worldWp::util::NoiseMods
 void ModelBuilder::add_normals() {
 	for(int i = 0; i != (ms.x_dim-1)*ms.y_dim; ++i) {
 	    worldWp::util::add_normal(&plane_verts[i],
-		//pass pos of each Vertex
-		(float*) &plane_verts[i+1],
-		(float*) &plane_verts[i+ms.y_dim]);
+			//pass pos of each Vertex
+			(float*) &plane_verts[i+1],
+			(float*) &plane_verts[i+ms.y_dim]);
 
 		//add normals to "downward-pointing" triangle.
 		int i_offset = ms.x_dim*ms.y_dim+i+1;
 	    worldWp::util::add_normal(&plane_verts[i_offset],
-		(float*) &plane_verts[i_offset+ms.y_dim],
-		(float*) &plane_verts[i_offset+ms.y_dim-1]);
+			(float*) &plane_verts[i_offset+ms.y_dim],
+			(float*) &plane_verts[i_offset+ms.y_dim-1]);
 	}
 }
-	
+
+void ModelBuilder::add_vertices(const FastNoise& fn) {
+	//fill plane_verts with values from ns_gen.
+    //indx = i*j at any point in loop.
+    int indx = 0;
+	int offset = ms.x_dim*ms.y_dim;
+    for(int i = 0; i != ms.x_dim*ms.res; i+=ms.res)
+        for(int j = 0; j != ms.y_dim*ms.res; j+=ms.res, ++indx)
+            plane_verts[indx+offset] =
+			plane_verts[indx       ] = {(float) i,
+									    (float) j, 
+			                            util::get_noise_mdfd(i, j, fn, nm),
+			                            0, 0, 0,
+			                            0xff666666 };
+}
+
 
 bgfx::IndexBufferHandle ModelBuilder::getIBufferHandle() {
     return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
@@ -89,8 +96,8 @@ bgfx::IndexBufferHandle ModelBuilder::getIBufferHandle() {
 bgfx::VertexBufferHandle ModelBuilder::getVBufferHandle() {
     return bgfx::createVertexBuffer(
         bgfx::makeRef(plane_verts,
-             ms.x_dim*ms.y_dim*2*sizeof(worldWp::util::PosNormalColorVertex)),
-             worldWp::util::PosNormalColorVertex::layout);
+			ms.x_dim*ms.y_dim*2*sizeof(worldWp::util::PosNormalColorVertex)),
+			worldWp::util::PosNormalColorVertex::layout);
 }
 
 };

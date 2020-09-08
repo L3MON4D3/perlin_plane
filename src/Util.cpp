@@ -62,5 +62,9 @@ void add_normal(PosNormalColorVertex *vert_target,
     fl_target[5] = vc_norm.z;
 }
 
+float get_noise_mdfd(float x, float y, FastNoise fn, NoiseMods nm) {
+	return nm.res_stretch*fn.GetNoise(nm.x_stretch*x, nm.y_stretch*y);
+}
+
 };
 };
