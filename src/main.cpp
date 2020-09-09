@@ -98,10 +98,12 @@ int main(int argc, char** argv) {
     float pos {-15.0f};
 
 
-	int frame_ctr{-1};
+	int frame_ctr{-1}, ctr{0};
+
+	int tran_length{2000};
     while (!glfwWindowShouldClose(window)) {
 		++frame_ctr;
-		if (frame_ctr == 1000)
+		if (frame_ctr == tran_length)
 			frame_ctr = 0;
 		
         glfwPollEvents();
@@ -119,10 +121,11 @@ int main(int argc, char** argv) {
 
 			offset_noise = new float[pl_width*pl_height];
 			builder.for_each_vertex(
-				[new_noise, offset_noise](worldWp::util::PosNormalColorVertex& v, int i) {
+				[new_noise, offset_noise, tran_length](worldWp::util::PosNormalColorVertex& v, int i) {
 					//offset_nose is difference between new and old noise.
-					offset_noise[i] = (new_noise[i] - v.pos[2])*.001;
+					offset_noise[i] = (new_noise[i] - v.pos[2])*(1.0/tran_length);
 			});
+			std::cout << ++ctr << std::endl;
 		}
 
 		builder.for_each_vertex(
@@ -130,6 +133,8 @@ int main(int argc, char** argv) {
 				v.pos[2]+=offset_noise[i];
 		});
 		builder.add_normals();
+		//IMPORTANT!!!
+		bgfx::destroy(vbh);
 		vbh = builder.getVBufferHandle();
 
         bx::Vec3 at  {0, 0,    0};
