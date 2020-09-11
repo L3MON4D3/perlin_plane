@@ -18,13 +18,13 @@ struct ModelSpecs {
 
 class PlaneBuilder {
 public:
-    PlaneBuilder(
+	PlaneBuilder(
 	  const ModelSpecs& ms,
 	  const FastNoise& fn,
 	  const worldWp::util::NoiseMods& nm );
 
-    bgfx::VertexBufferHandle getVBufferHandle();
-    bgfx::IndexBufferHandle getIBufferHandle();
+	bgfx::VertexBufferHandle getVBufferHandle();
+	bgfx::IndexBufferHandle getIBufferHandle();
 	void for_each_vertex(
 	  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn);
 	float* get_raw_noise(const FastNoise& fn);
@@ -33,9 +33,9 @@ private:
 	ModelSpecs ms;
 	worldWp::util::NoiseMods nm;
 	worldWp::util::PosNormalColorVertex *plane_verts;
-    uint32_t *plane_indz;
+	uint32_t *plane_indz;
 
-	void add_vertices(const FastNoise& fn);
+	void add_plane_vertices(const FastNoise& fn);
 };
 
 };
