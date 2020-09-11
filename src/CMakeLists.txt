@@ -1,7 +1,7 @@
 add_executable(worldWP
     main.cpp
     Util.cpp
-    ModelBuilder.cpp
+    PlaneBuilder.cpp
 )
 
 add_library(perlin

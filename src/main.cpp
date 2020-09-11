@@ -1,5 +1,5 @@
 #include "Util.hpp"
-#include "ModelBuilder.hpp"
+#include "PlaneBuilder.hpp"
 
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
@@ -62,8 +62,8 @@ int main(int argc, char** argv) {
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(std::rand());
-	int pl_height{100}, pl_width{100};
-    worldWp::ModelBuilder builder( {pl_width, pl_height, 9}, fn, {2, 2, 80} );
+	worldWp::ModelSpecs specs {10, 10, 9};
+    worldWp::PlaneBuilder builder(specs, fn, {2, 2, 40});
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
     worldWp::util::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111ff, 1.0f, 0);
+    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x282828ff, 1.0f, 0);
     setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
 
     VertexBufferHandle vbh = builder.getVBufferHandle();
@@ -97,10 +97,10 @@ int main(int argc, char** argv) {
 
     float pos {-15.0f};
 
-
 	int frame_ctr{-1}, ctr{0};
 
-	int tran_length{2000};
+	int tran_length{800};
+	float* offset_noise;
     while (!glfwWindowShouldClose(window)) {
 		++frame_ctr;
 		if (frame_ctr == tran_length)
@@ -114,31 +114,31 @@ int main(int argc, char** argv) {
             setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
         }
 
-		float* offset_noise;
 		if (frame_ctr == 0) {
 			fn.SetSeed(std::rand());
 			float* new_noise = builder.get_raw_noise(fn);
 
-			offset_noise = new float[pl_width*pl_height];
+			offset_noise = new float[specs.x_dim*specs.z_dim];
 			builder.for_each_vertex(
-				[new_noise, offset_noise, tran_length](worldWp::util::PosNormalColorVertex& v, int i) {
+				[new_noise, offset_noise, tran_length]
+				(worldWp::util::PosNormalColorVertex& v, int i) {
 					//offset_nose is difference between new and old noise.
-					offset_noise[i] = (new_noise[i] - v.pos[2])*(1.0/tran_length);
+					offset_noise[i] = (new_noise[i] - v.pos[1])*(1.0/tran_length);
 			});
 			std::cout << ++ctr << std::endl;
 		}
 
 		builder.for_each_vertex(
 			[offset_noise](worldWp::util::PosNormalColorVertex& v, int i) {
-				v.pos[2]+=offset_noise[i];
+				v.pos[1]+=offset_noise[i];
 		});
 		builder.add_normals();
 		//IMPORTANT!!!
 		bgfx::destroy(vbh);
 		vbh = builder.getVBufferHandle();
 
-        bx::Vec3 at  {0, 0,    0};
-        bx::Vec3 eye {0, 0, -100};
+        bx::Vec3 at  {0, 0, 0};
+        bx::Vec3 eye {0, 100, 100};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);
@@ -157,11 +157,12 @@ int main(int argc, char** argv) {
         touch(clearView);
 
         float mtx[16];
-        bx::mtxRotateY(mtx, 0.0f);
-		pos += 0.1;
-        mtx[12] = -20;
-        mtx[13] = -20;
-        mtx[14] = -10;
+        bx::mtxRotateY(mtx, bx::kPiQuarter);
+		//float center{specs.x_dim*specs.z_dim*specs.res/2.0f};
+
+		//mtx[12] = 0,
+		//mtx[13] = 0,
+		//mtx[14] = 0;
 
         bgfx::setTransform(mtx);
 
@@ -174,6 +175,7 @@ int main(int argc, char** argv) {
         frame();
     }
 
+	delete offset_noise;
     destroy(vbh);
     destroy(ibh);
     shutdown();
