@@ -6,8 +6,8 @@
 #include <iostream>
 #include <ostream>
 
-#define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*2)
-#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*2)
+#define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*6)
+#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*6)
 
 const float frame_width = 1;
 
@@ -132,9 +132,9 @@ void PlaneBuilder::add_plane_vertices(const FastNoise& fn) {
 	for(int i {0}; i != ms.x_dim*ms.res; i+=ms.res)
 		for(int j {0}; j != ms.z_dim*ms.res; j+=ms.res, ++indx)
 			plane_verts[indx+offset] =
-			plane_verts[indx       ] = { (float) i-ms.x_dim*ms.res/2,
+			plane_verts[indx       ] = { float(i-(ms.x_dim-1)*ms.res/2.0),
 			                             util::get_noise_mdfd(i, j, fn, nm),
-			                             (float) j-ms.z_dim*ms.res/2, 
+			                             float(j-(ms.z_dim-1)*ms.res/2.0), 
 			                             0, 0, 0,
 			                             0xff666666 };
 }
@@ -180,12 +180,44 @@ void PlaneBuilder::add_frame_vertices() {
 	int vert_offset{ms.x_dim*ms.z_dim*2},
 	    indx_offset{(ms.x_dim-1)*(ms.z_dim-1)*12};
 
-	add_frame_vertices_2d(Dimension::Z, {0,0,0}, 10, 10, vert_offset);
+	float x_length{float((ms.x_dim-1)*ms.res)},
+	      z_length{float((ms.z_dim-1)*ms.res)};
+
+	add_frame_vertices_2d(Dimension::Y,
+		{ -x_length/2, -x_length/2, -z_length/2 },
+		x_length, z_length, vert_offset );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
-	add_frame_vertices_2d(Dimension::Y, {0,0,0}, 10, 10, vert_offset);
+	add_frame_vertices_2d(Dimension::Y,
+		{ -x_length/2, x_length/2+1, -z_length/2 },
+		x_length, z_length, vert_offset );
 	add_frame_indzs(indx_offset, vert_offset);
+	vert_offset += 12, indx_offset += frame_indzs_count;
+
+	add_frame_vertices_2d(Dimension::Z,
+		{ -x_length/2, -x_length/2, -z_length/2 },
+		x_length, z_length, vert_offset );
+	add_frame_indzs(indx_offset, vert_offset);
+	vert_offset += 12, indx_offset += frame_indzs_count;
+
+	add_frame_vertices_2d(Dimension::Z,
+		{ -x_length/2, -x_length/2, z_length/2 },
+		x_length, z_length, vert_offset );
+	add_frame_indzs(indx_offset, vert_offset);
+	vert_offset += 12, indx_offset += frame_indzs_count;
+
+	add_frame_vertices_2d(Dimension::X,
+		{ x_length/2, -x_length/2, -z_length/2 },
+		x_length, z_length, vert_offset );
+	add_frame_indzs(indx_offset, vert_offset);
+	vert_offset += 12, indx_offset += frame_indzs_count;
+
+	add_frame_vertices_2d(Dimension::X,
+		{ -x_length/2, -x_length/2, -z_length/2 },
+		x_length, z_length, vert_offset );
+	add_frame_indzs(indx_offset, vert_offset);
+	vert_offset += 12, indx_offset += frame_indzs_count;
 }
 
 float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
@@ -199,14 +231,12 @@ float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
 }
 
 bgfx::IndexBufferHandle PlaneBuilder::getIBufferHandle() {
-	std::cout << plane_indz[9] << std::endl;
 	return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
 		IBUF_CNT*sizeof(uint32_t)),
 		BGFX_BUFFER_INDEX32);
 }
 
 bgfx::VertexBufferHandle PlaneBuilder::getVBufferHandle() {
-	std::cout << plane_verts[9].pos[0] << std::endl;
 	return bgfx::createVertexBuffer(
 		bgfx::makeRef(plane_verts,
 			VBUF_CNT*sizeof(util::PosNormalColorVertex)),
