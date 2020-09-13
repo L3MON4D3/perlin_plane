@@ -16,6 +16,10 @@ struct ModelSpecs {
 	    res;
 };
 
+enum Dimension {
+	X, Y, Z
+};
+
 class PlaneBuilder {
 public:
 	PlaneBuilder(
@@ -26,7 +30,8 @@ public:
 	bgfx::VertexBufferHandle getVBufferHandle();
 	bgfx::IndexBufferHandle getIBufferHandle();
 	void for_each_vertex(
-	  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn);
+	  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn );
+
 	float* get_raw_noise(const FastNoise& fn);
 	void add_normals();
 private:
@@ -36,6 +41,12 @@ private:
 	uint32_t *plane_indz;
 
 	void add_plane_vertices(const FastNoise& fn);
+	void add_frame_vertices_2d(
+	  Dimension dim,
+	  bx::Vec3 pos, float dim1, float dim2,
+	  int start_pos );
+	void add_frame_vertices();
+	void add_frame_indzs(int start_indx, int vert_offset);
 };
 
 };
