@@ -222,6 +222,32 @@ void PlaneBuilder::add_frame_vertices() {
 	vert_offset += 12, indx_offset += frame_indzs_count;
 }
 
+void PlaneBuilder::add_base_vertices(float y_start) {
+	/* Example Vertex Layout: (add vert_start)
+	 * 6 5 4
+	 * 7   3
+	 * 0 1 2
+	 */
+	int vert_start{ ms.x_dim*ms.z_dim*2 + 12*6 };
+	for(int i{vert_start}; i != vert_start + ms.x_dim*2+ms.z_dim*2; ++i)
+		plane_verts[i] = {0,0,0, 0,1,1, 0xff666666};
+	
+	const int dirs[2] {0,  2},
+	          dir_size[2] {ms.x_dim, ms.z_dim},
+	          sign[2] {1, -1};
+
+	for(int d{0}; d != 2; ++d)
+		for(int s{0}; s != 2; ++s)
+			for(int i{0}; i != dir_size[d]; ++i) {
+				util::PosNormalColorVertex& v{plane_verts[vert_start+i]};
+				v.pos[d] = -sign[s]*dir_size[d]/2 + sign[s]*i*ms.res;
+				v.pos[d+1%2] = dir_size[d+1%2]/2;
+			}
+		
+	
+	
+}
+
 float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
 	float* ns {new float[ms.x_dim*ms.z_dim]};
 
