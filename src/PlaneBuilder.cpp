@@ -22,17 +22,17 @@ const float frame_verts[12][2] {
 	{frame_width, 0          },
 	{frame_width, frame_width},
 
-	{frame_width, 0          },
-	{frame_width, frame_width},
-	{0          , frame_width},
+	{0, 0          },
+	{0, frame_width},
+	{-frame_width          , frame_width},
 
-	{frame_width, frame_width},
-	{0          , frame_width},
-	{0          ,           0},
+	{0, 0},
+	{-frame_width          , 0},
+	{0          ,           -frame_width},
 
-	{0          , frame_width},
-	{0          ,           0},
-	{frame_width,           0}
+	{0          , 0},
+	{0          ,           -frame_width},
+	{frame_width,           -frame_width}
 };
 
 const uint32_t frame_indzs[frame_indzs_count] {
@@ -190,7 +190,7 @@ void PlaneBuilder::add_frame_vertices() {
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
 	add_frame_vertices_2d(Dimension::Y,
-		{ -x_length/2, x_length/2+1, -z_length/2 },
+		{ -x_length/2, x_length/2, -z_length/2 },
 		x_length, z_length, vert_offset );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
