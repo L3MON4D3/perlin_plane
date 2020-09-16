@@ -33,6 +33,9 @@ const uint16_t cubeTriList[] = {
  * @param init Pass empty bgfx::Init.
  */
 GLFWwindow* create_window(int width, int height) {
+    //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     GLFWwindow *window =
         glfwCreateWindow(width, height, "worldWp", nullptr, nullptr);
 
@@ -40,11 +43,12 @@ GLFWwindow* create_window(int width, int height) {
 
     init.platformData.ndt = glfwGetX11Display();
     init.platformData.nwh = (void*) glfwGetX11Window(window);
+    init.platformData.context = glfwGetCurrentContext();
     
     glfwGetWindowSize(window, &width, &height);
     init.resolution.height = height;
     init.resolution.width = width;
-    init.resolution.reset = BGFX_RESET_VSYNC;
+    init.resolution.reset = BGFX_RESET_MSAA_X2;
 
     bgfx::init(init);
 
@@ -67,7 +71,6 @@ int main(int argc, char** argv) {
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     //init should not go out of scope until program finishes.
     int width = 1000, height = 1000;
@@ -77,8 +80,7 @@ int main(int argc, char** argv) {
     worldWp::util::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x282828ff, 1.0f, 0);
-    setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
+    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000, 1.0f, 0);
 
     VertexBufferHandle vbh = builder.getVBufferHandle();
     //VertexBufferHandle vbh = createVertexBuffer(
@@ -125,7 +127,6 @@ int main(int argc, char** argv) {
 					//offset_nose is difference between new and old noise.
 					offset_noise[i] = (new_noise[i] - v.pos[1])*(1.0/tran_length);
 			});
-			std::cout << ++ctr << std::endl;
 		}
 
 		builder.for_each_vertex(
@@ -157,7 +158,9 @@ int main(int argc, char** argv) {
         touch(clearView);
 
         float mtx[16];
-        bx::mtxRotateY(mtx, bx::kPiQuarter);
+        bx::mtxRotateY(mtx, 0);
+        bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.001));
+        //bx::mtxRotateY(mtx, bx::kPiQuarter);
 		//float center{specs.x_dim*specs.z_dim*specs.res/2.0f};
 
 		//mtx[12] = 0,
@@ -168,7 +171,7 @@ int main(int argc, char** argv) {
 
         bgfx::setVertexBuffer(0, vbh);
         bgfx::setIndexBuffer(ibh);
-        bgfx::setState(BGFX_STATE_DEFAULT);
+        bgfx::setState(BGFX_STATE_DEFAULT | BGFX_STATE_MSAA);
 
         bgfx::submit(clearView, program);
 
