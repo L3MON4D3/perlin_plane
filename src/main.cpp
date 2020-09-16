@@ -34,16 +34,17 @@ const uint16_t cubeTriList[] = {
  */
 GLFWwindow* create_window(int width, int height) {
     //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+	//glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     GLFWwindow *window =
         glfwCreateWindow(width, height, "worldWp", nullptr, nullptr);
+	//glfwMakeContextCurrent(window);
 
     bgfx::Init init;
 
     init.platformData.ndt = glfwGetX11Display();
     init.platformData.nwh = (void*) glfwGetX11Window(window);
-    init.platformData.context = glfwGetCurrentContext();
+    //init.platformData.context = glfwGetCurrentContext();
     
     glfwGetWindowSize(window, &width, &height);
     init.resolution.height = height;
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
     worldWp::util::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000, 1.0f, 0);
+    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x282828ff, 1.0f, 0);
 
     VertexBufferHandle vbh = builder.getVBufferHandle();
     //VertexBufferHandle vbh = createVertexBuffer(
