@@ -138,14 +138,14 @@ int main(int argc, char** argv) {
 		vbh = builder.getVBufferHandle();
 
         bx::Vec3 at  {0, 0, 0};
-        bx::Vec3 eye {0, 100, 100};
+        bx::Vec3 eye {0, 70*2, 100*2};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);
 
         float proj[16];
         bx::mtxProj(proj,
-            90.0,
+            60.0f,
             ((float)width)/height,
             0.1f,
             800.0f,
