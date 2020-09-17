@@ -6,8 +6,8 @@
 #include <iostream>
 #include <ostream>
 
-#define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*6)
-#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*6)
+#define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*6 + (ms.x_dim + ms.z_dim)*2)
+#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*6 + 3)
 
 const float frame_width = .3;
 
@@ -69,8 +69,10 @@ PlaneBuilder::PlaneBuilder(
 	  plane_indz{ new uint32_t[IBUF_CNT] } {
 
 	add_plane_vertices(fn);
-	add_frame_vertices();
 	add_normals();
+	add_frame_vertices();
+	add_base_vertices(0);
+	add_base_indizes();
 
 	//fill plane_indz.
 	int offset{ ms.x_dim*ms.z_dim };
@@ -171,11 +173,6 @@ void PlaneBuilder::add_frame_vertices_2d(
 	}
 }
 
-void PlaneBuilder::add_frame_indzs(int start_indx, int vertex_offset) {
-	for(int i{0}; i != frame_indzs_count; ++i)
-		plane_indz[start_indx+i] = frame_indzs[i]+vertex_offset;
-}
-
 void PlaneBuilder::add_frame_vertices() {
 	int vert_offset{ms.x_dim*ms.z_dim*2},
 	    indx_offset{(ms.x_dim-1)*(ms.z_dim-1)*12};
@@ -222,30 +219,52 @@ void PlaneBuilder::add_frame_vertices() {
 	vert_offset += 12, indx_offset += frame_indzs_count;
 }
 
+void PlaneBuilder::add_frame_indzs(int start_indx, int vertex_offset) {
+	for(int i{0}; i != frame_indzs_count; ++i)
+		plane_indz[start_indx+i] = frame_indzs[i]+vertex_offset;
+}
+
 void PlaneBuilder::add_base_vertices(float y_start) {
-	/* Example Vertex Layout: (add vert_start)
+	/* Example Vertex Layout: (add start_vert)
 	 * 6 5 4
 	 * 7   3
 	 * 0 1 2
 	 */
-	int vert_start{ ms.x_dim*ms.z_dim*2 + 12*6 };
-	for(int i{vert_start}; i != vert_start + ms.x_dim*2+ms.z_dim*2; ++i)
-		plane_verts[i] = {0,0,0, 0,1,1, 0xff666666};
+	int start_vert{ ms.x_dim*ms.z_dim*2 + 12*6 };
+	for(int i{start_vert}; i != start_vert + (ms.x_dim+ms.z_dim)*2; ++i)
+		plane_verts[i] = {0,y_start,0, 0,1,1, 0xff666666};
 	
 	const int dirs[2] {0,  2},
-	          dir_size[2] {ms.x_dim, ms.z_dim},
+	          dir_size[2] {ms.x_dim-1, ms.z_dim-1},
 	          sign[2] {1, -1};
+	const float corners[4][2] {
+				  {-(ms.x_dim-1)*ms.res/2.0f, -(ms.z_dim-1)*ms.res/2.0f},
+				  { (ms.x_dim-1)*ms.res/2.0f, -(ms.z_dim-1)*ms.res/2.0f},
+				  { (ms.x_dim-1)*ms.res/2.0f,  (ms.z_dim-1)*ms.res/2.0f},
+				  {-(ms.x_dim-1)*ms.res/2.0f,  (ms.z_dim-1)*ms.res/2.0f}
+			  };
+
+	int indx{start_vert};
 
 	for(int d{0}; d != 2; ++d)
 		for(int s{0}; s != 2; ++s)
-			for(int i{0}; i != dir_size[d]; ++i) {
-				util::PosNormalColorVertex& v{plane_verts[vert_start+i]};
-				v.pos[d] = -sign[s]*dir_size[d]/2 + sign[s]*i*ms.res;
-				v.pos[d+1%2] = dir_size[d+1%2]/2;
+			for(int i{0}; i != dir_size[d]*ms.res; i+=ms.res, ++indx) {
+				util::PosNormalColorVertex& v{ plane_verts[indx] };
+				const float *corner{ corners[d*2+s] };
+
+				v.pos[dirs[d]] = corner[d] + sign[s]*i;
+				//d=1 -> 0, d=0 -> 1
+				v.pos[dirs[d^1]] = corner[d^1];
 			}
-		
-	
-	
+}
+
+void PlaneBuilder::add_base_indizes() {
+	int start_indx{ ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*6) },
+	    start_vert{ ms.x_dim*ms.z_dim*2 + 12*6 };
+
+	plane_indz[start_indx  ] = start_vert             ,
+	plane_indz[start_indx+1] = start_vert + ms.x_dim-1,
+	plane_indz[start_indx+2] = start_vert + ms.x_dim-1 + ms.z_dim-1;
 }
 
 float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
@@ -260,8 +279,7 @@ float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
 
 bgfx::IndexBufferHandle PlaneBuilder::getIBufferHandle() {
 	return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
-		IBUF_CNT*sizeof(uint32_t)),
-		BGFX_BUFFER_INDEX32);
+		IBUF_CNT*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 }
 
 bgfx::VertexBufferHandle PlaneBuilder::getVBufferHandle() {
