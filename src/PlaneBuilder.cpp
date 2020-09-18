@@ -6,8 +6,8 @@
 #include <iostream>
 #include <ostream>
 
-#define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*6 + (ms.x_dim + ms.z_dim)*2)
-#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*6 + 3)
+#define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*6 + (ms.x_dim-1 + ms.z_dim-1)*2)
+#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*2*2*3 + frame_indzs_count*6 + (ms.x_dim-1)+(ms.z_dim-1)*2*2*3)
 
 const float frame_width = .3;
 
@@ -71,7 +71,7 @@ PlaneBuilder::PlaneBuilder(
 	add_plane_vertices(fn);
 	add_normals();
 	add_frame_vertices();
-	add_base_vertices(0);
+	add_base_vertices(-40);
 	add_base_indizes();
 
 	//fill plane_indz.
@@ -231,7 +231,7 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 	 * 0 1 2
 	 */
 	int start_vert{ ms.x_dim*ms.z_dim*2 + 12*6 };
-	for(int i{start_vert}; i != start_vert + (ms.x_dim+ms.z_dim)*2; ++i)
+	for(int i{start_vert}; i != start_vert + (ms.x_dim-1+ms.z_dim-1)*2; ++i)
 		plane_verts[i] = {0,y_start,0, 0,1,1, 0xff666666};
 	
 	const int dirs[2] {0,  2},
@@ -260,11 +260,30 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 
 void PlaneBuilder::add_base_indizes() {
 	int start_indx{ ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*6) },
-	    start_vert{ ms.x_dim*ms.z_dim*2 + 12*6 };
+	    base_start_vert{ ms.x_dim*ms.z_dim*2 + 12*6 };
 
-	plane_indz[start_indx  ] = start_vert             ,
-	plane_indz[start_indx+1] = start_vert + ms.x_dim-1,
-	plane_indz[start_indx+2] = start_vert + ms.x_dim-1 + ms.z_dim-1;
+	int indx{start_indx};
+	for(int i{0}; i != ms.x_dim-1; ++i, indx+=6) {
+		plane_indz[indx+1] = i*ms.z_dim;
+		plane_indz[indx+2] = base_start_vert+i;
+		plane_indz[indx+0] = base_start_vert+i+1;
+
+		plane_indz[indx+4] = i*ms.z_dim;
+		plane_indz[indx+5] = base_start_vert+i+1;
+		plane_indz[indx+3] = (i+1)*ms.z_dim;
+	}
+
+	int plane_vert_start{ (ms.x_dim-1)*ms.z_dim };
+	base_start_vert+=ms.x_dim-1;
+	for(int i{0}; i != ms.z_dim-1; ++i, indx+=6) {
+		plane_indz[indx+1] = plane_vert_start+i;
+		plane_indz[indx+2] = base_start_vert+i;
+		plane_indz[indx+0] = base_start_vert+i+1;
+
+		plane_indz[indx+4] = plane_vert_start+i;
+		plane_indz[indx+5] = base_start_vert+i+1;
+		plane_indz[indx+3] = plane_vert_start+i+1;
+	}
 }
 
 float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
