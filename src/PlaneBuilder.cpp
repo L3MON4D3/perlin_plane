@@ -246,11 +246,11 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 
 	int indx{start_vert};
 
-	for(int d{0}; d != 2; ++d)
-		for(int s{0}; s != 2; ++s)
+	for(int s{0}; s != 2; ++s)
+		for(int d{0}; d != 2; ++d)
 			for(int i{0}; i != dir_size[d]*ms.res; i+=ms.res, ++indx) {
 				util::PosNormalColorVertex& v{ plane_verts[indx] };
-				const float *corner{ corners[d*2+s] };
+				const float *corner{ corners[s*2+d] };
 
 				v.pos[dirs[d]] = corner[d] + sign[s]*i;
 				//d=1 -> 0, d=0 -> 1
