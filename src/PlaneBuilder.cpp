@@ -7,7 +7,7 @@
 #include <ostream>
 
 #define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*6 + (ms.x_dim-1 + ms.z_dim-1)*2)
-#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*2*2*3 + frame_indzs_count*6 + (ms.x_dim-1)+(ms.z_dim-1)*2*2*3)
+#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*2*2*3 + frame_indzs_count*6 + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3)
 
 const float frame_width = .3;
 
@@ -283,6 +283,18 @@ void PlaneBuilder::add_base_indizes() {
 		plane_indz[indx+4] = plane_vert_start+i;
 		plane_indz[indx+5] = base_start_vert+i+1;
 		plane_indz[indx+3] = plane_vert_start+i+1;
+	}
+
+	plane_vert_start = (ms.x_dim-1)*ms.z_dim+ms.z_dim-1;
+	base_start_vert += ms.z_dim-1;
+	for(int i{0}; i != ms.x_dim-1; ++i, indx+=6) {
+		plane_indz[indx+1] = plane_vert_start-i*ms.z_dim;
+		plane_indz[indx+2] = base_start_vert+i;
+		plane_indz[indx+0] = base_start_vert+i+1;
+
+		plane_indz[indx+4] = plane_vert_start-i*ms.z_dim;
+		plane_indz[indx+5] = base_start_vert+i+1;
+		plane_indz[indx+3] = plane_vert_start-(i+1)*ms.z_dim;
 	}
 }
 
