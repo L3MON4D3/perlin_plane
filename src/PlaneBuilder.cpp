@@ -57,6 +57,10 @@ const uint32_t frame_indzs[frame_indzs_count] {
 	10,  0,  1
 };
 
+std::ostream& operator<<(std::ostream& out, util::PosNormalColorVertex& v) {
+	return out << "{" << v.pos[0] << ", " << v.pos[1] << ", " << v.pos[2] << "}";
+}
+
 PlaneBuilder::PlaneBuilder(
   const ModelSpecs& ms,
   const FastNoise& fn,
@@ -296,6 +300,27 @@ void PlaneBuilder::add_base_indizes() {
 		plane_indz[indx+5] = base_start_vert+i+1;
 		plane_indz[indx+3] = plane_vert_start-(i+1)*ms.z_dim;
 	}
+
+	plane_vert_start = ms.z_dim-1;
+	base_start_vert += ms.x_dim-1;
+	for(int i{0}; i != ms.x_dim-2; ++i, indx+=6) {
+		plane_indz[indx+1] = plane_vert_start-i;
+		plane_indz[indx+2] = base_start_vert+i;
+		plane_indz[indx+0] = base_start_vert+(i+1);
+
+		plane_indz[indx+4] = plane_vert_start-i;
+		plane_indz[indx+5] = base_start_vert+(i+1);
+		plane_indz[indx+3] = plane_vert_start-(i+1);
+	}
+	//add last two triangles by hand, stupid in loop:
+	plane_indz[indx+1] = 1;
+	plane_indz[indx+2] = base_start_vert + ms.x_dim-2;
+	plane_indz[indx+0] = base_start_vert + ms.x_dim-1;
+
+	plane_indz[indx+4] = 1;
+	plane_indz[indx+5] = base_start_vert + ms.x_dim-1;
+	plane_indz[indx+3] = 0;
+	
 }
 
 float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
