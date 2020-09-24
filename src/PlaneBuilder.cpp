@@ -94,7 +94,7 @@ PlaneBuilder::PlaneBuilder(
 		    plane_z_dim{ ms.z_dim-1 };
 		for(int i = 0; i != plane_x_dim; ++i)
 			for(int j = 0; j != plane_z_dim; ++j) {
-				int vert_start_indx {i*ms.x_dim + j};
+				int vert_start_indx {i*ms.z_dim + j};
 				
 				//init vertices for triangles.
 				int v1{ vert_start_indx },
@@ -102,7 +102,7 @@ PlaneBuilder::PlaneBuilder(
 				    v3{ vert_start_indx+ms.z_dim },
 				    v4{ v3+1 };
 				
-				int tri_start_indx {(i*plane_x_dim + j) * 12};
+				int tri_start_indx {(i*plane_z_dim + j) * 12};
 				//first Triangle of "square".
 				plane_indz[tri_start_indx   ] = v3;
 				plane_indz[tri_start_indx+ 1] = v2;
