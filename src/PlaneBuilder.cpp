@@ -6,8 +6,8 @@
 #include <iostream>
 #include <ostream>
 
-#define VBUF_CNT (ms.x_dim*ms.z_dim*2 + 12*6 + (ms.x_dim-1 + ms.z_dim-1)*2)
-#define IBUF_CNT ((ms.x_dim-1)*(ms.z_dim-1)*2*2*3 + frame_indzs_count*6 + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3)
+int ibuf_indzs[4],
+    vbuf_indzs[4];
 
 const float frame_width = .3;
 
@@ -67,10 +67,19 @@ PlaneBuilder::PlaneBuilder(
   const worldWp::util::NoiseMods& nm
 )
 	: ms{ ms },
-	  nm{ nm },
-	  //double space, store duplicate indizes ith different normals.
-	  plane_verts{ new worldWp::util::PosNormalColorVertex[VBUF_CNT] },
-	  plane_indz{ new uint32_t[IBUF_CNT] } {
+	  nm{ nm } {
+
+	vbuf_indzs[0] =                 ms.x_dim*ms.z_dim*2,
+	vbuf_indzs[1] = vbuf_indzs[0] + 12*6,
+	vbuf_indzs[2] = vbuf_indzs[1] + (ms.x_dim-1 + ms.z_dim-1)*2,
+
+	ibuf_indzs[0] =                 (ms.x_dim-1)*(ms.z_dim-1)*2*2*3,
+	ibuf_indzs[1] = ibuf_indzs[0] + frame_indzs_count*6,
+	ibuf_indzs[2] = ibuf_indzs[1] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3;
+
+	//double space, store duplicate indizes ith different normals.
+	plane_verts = new worldWp::util::PosNormalColorVertex[ibuf_indzs[2]];
+	plane_indz = new uint32_t[ibuf_indzs[2]];
 
 	add_plane_vertices(fn);
 	add_normals();
@@ -178,8 +187,8 @@ void PlaneBuilder::add_frame_vertices_2d(
 }
 
 void PlaneBuilder::add_frame_vertices() {
-	int vert_offset{ms.x_dim*ms.z_dim*2},
-	    indx_offset{(ms.x_dim-1)*(ms.z_dim-1)*12};
+	int vert_offset{vbuf_indzs[0]},
+	    indx_offset{ibuf_indzs[0]};
 
 	float x_length{float((ms.x_dim-1)*ms.res)},
 	      z_length{float((ms.z_dim-1)*ms.res)},
@@ -234,7 +243,7 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 	 * 7   3
 	 * 0 1 2
 	 */
-	int start_vert{ ms.x_dim*ms.z_dim*2 + 12*6 };
+	int start_vert{vbuf_indzs[1]};
 	for(int i{start_vert}; i != start_vert + (ms.x_dim-1+ms.z_dim-1)*2; ++i)
 		plane_verts[i] = {0,y_start,0, 0,1,1, 0xff666666};
 	
@@ -263,8 +272,8 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 }
 
 void PlaneBuilder::add_base_indizes() {
-	int start_indx{ ((ms.x_dim-1)*(ms.z_dim-1)*12 + frame_indzs_count*6) },
-	    base_start_vert{ ms.x_dim*ms.z_dim*2 + 12*6 };
+	int start_indx{ibuf_indzs[1]},
+	    base_start_vert{vbuf_indzs[1]};
 
 	int indx{start_indx};
 	for(int i{0}; i != ms.x_dim-1; ++i, indx+=6) {
@@ -335,13 +344,13 @@ float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
 
 bgfx::IndexBufferHandle PlaneBuilder::getIBufferHandle() {
 	return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
-		IBUF_CNT*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
+		ibuf_indzs[2]*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 }
 
 bgfx::VertexBufferHandle PlaneBuilder::getVBufferHandle() {
 	return bgfx::createVertexBuffer(
 		bgfx::makeRef(plane_verts,
-			VBUF_CNT*sizeof(util::PosNormalColorVertex)),
+			vbuf_indzs[2]*sizeof(util::PosNormalColorVertex)),
 			util::PosNormalColorVertex::layout);
 }
 
