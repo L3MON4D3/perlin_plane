@@ -71,11 +71,11 @@ PlaneBuilder::PlaneBuilder(
 
 	vbuf_indzs[0] =                 ms.x_dim*ms.z_dim*2,
 	vbuf_indzs[1] = vbuf_indzs[0] + 12*6,
-	vbuf_indzs[2] = vbuf_indzs[1] + (ms.x_dim-1 + ms.z_dim-1)*2,
+	vbuf_indzs[2] = vbuf_indzs[1] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4,
 
 	ibuf_indzs[0] =                 (ms.x_dim-1)*(ms.z_dim-1)*2*2*3,
 	ibuf_indzs[1] = ibuf_indzs[0] + frame_indzs_count*6,
-	ibuf_indzs[2] = ibuf_indzs[1] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3;
+	ibuf_indzs[2] = ibuf_indzs[1] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6;
 
 	//double space, store duplicate indizes ith different normals.
 	plane_verts = new worldWp::util::PosNormalColorVertex[ibuf_indzs[2]];
@@ -269,6 +269,20 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 				//d=1 -> 0, d=0 -> 1
 				v.pos[dirs[d^1]] = corner[d^1];
 			}
+
+	//add vertex at 0 (see above) with different color for underside of base.
+	plane_verts[indx] = {corners[0][0], y_start, corners[0][1],
+	                     0,1,1,
+	                     0xff555555};
+	plane_verts[++indx] = {corners[1][0], y_start, corners[1][1],
+	                     0,1,1,
+	                     0xff555555};
+	plane_verts[++indx] = {corners[2][0], y_start, corners[2][1],
+	                     0,1,1,
+	                     0xff555555};
+	plane_verts[++indx] = {corners[3][0], y_start, corners[3][1],
+	                     0,1,1,
+	                     0xff555555};
 }
 
 void PlaneBuilder::add_base_indizes() {
@@ -321,15 +335,27 @@ void PlaneBuilder::add_base_indizes() {
 		plane_indz[indx+5] = base_start_vert+(i+1);
 		plane_indz[indx+3] = plane_vert_start-(i+1);
 	}
+
 	//add last two triangles by hand, stupid in loop:
 	plane_indz[indx+1] = 1;
 	plane_indz[indx+2] = base_start_vert + ms.x_dim-2;
-	plane_indz[indx+0] = base_start_vert + ms.x_dim-1;
+	plane_indz[indx+0] = vbuf_indzs[1];
 
 	plane_indz[indx+4] = 1;
-	plane_indz[indx+5] = base_start_vert + ms.x_dim-1;
+	plane_indz[indx+5] = vbuf_indzs[1];
 	plane_indz[indx+3] = 0;
-	
+	indx+=6;
+
+	//add rectangle on bottom of base.
+	//index of first base-rectangle-vertex.
+	base_start_vert = vbuf_indzs[2]-4;
+	plane_indz[indx  ] = base_start_vert;
+	plane_indz[indx+1] = base_start_vert+2;
+	plane_indz[indx+2] = base_start_vert+1;
+
+	plane_indz[indx+3] = base_start_vert;
+	plane_indz[indx+4] = base_start_vert+3;
+	plane_indz[indx+5] = base_start_vert+2;
 }
 
 float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
