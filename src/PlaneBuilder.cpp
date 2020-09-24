@@ -190,8 +190,9 @@ void PlaneBuilder::add_frame_vertices() {
 	int vert_offset{vbuf_indzs[0]},
 	    indx_offset{ibuf_indzs[0]};
 
-	float x_length{float((ms.x_dim-1)*ms.res)},
-	      z_length{float((ms.z_dim-1)*ms.res)},
+	//add some offset to frame so polygons dont overlap.
+	float x_length{float((ms.x_dim-1)*ms.res)+.01f},
+	      z_length{float((ms.z_dim-1)*ms.res)+.01f},
 		  height{x_length*2},
 		  y_start{-x_length};
 
