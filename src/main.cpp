@@ -16,18 +16,6 @@
 
 bgfx::VertexLayout worldWp::util::PosNormalColorVertex::layout;
 
-worldWp::util::PosNormalColorVertex cubeVertices[] = {
-    {-1.0f, -1.0f,  0.0f, 0, 0, 0, 0xff000000 },
-    {-1.0f,  1.0f,  0.0f, 0, 0, 0, 0xff0000ff },
-    { 1.0f,  1.0f,  0.0f, 0, 0, 0, 0xff00ff00 },
-    { 1.0f, -1.0f,  0.0f, 0, 0, 0, 0xff00ffff },
-};
-
-const uint16_t cubeTriList[] = {
-    0, 2, 1,
-    0, 3, 2
-};
-
 /**
  * Create new GLFW-Window with dims width x height. GLFW needs to be initialized.
  * @param init Pass empty bgfx::Init.
