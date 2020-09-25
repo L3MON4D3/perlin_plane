@@ -83,7 +83,7 @@ PlaneBuilder::PlaneBuilder(
 
 	add_plane_vertices(fn);
 	add_normals();
-	add_frame_vertices();
+	add_frame();
 	add_base_vertices(-40);
 	add_base_indizes();
 
@@ -186,7 +186,7 @@ void PlaneBuilder::add_frame_vertices_2d(
 	}
 }
 
-void PlaneBuilder::add_frame_vertices() {
+void PlaneBuilder::add_frame() {
 	int vert_offset{vbuf_indzs[0]},
 	    indx_offset{ibuf_indzs[0]};
 

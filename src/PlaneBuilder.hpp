@@ -46,7 +46,7 @@ private:
 	  bx::Vec3 pos, float dim1, float dim2,
 	  int start_pos );
 
-	void add_frame_vertices();
+	void add_frame();
 	void add_frame_indzs(int start_indx, int vert_offset);
 
 	void add_base_vertices(float y_start);
