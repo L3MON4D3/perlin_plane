@@ -313,7 +313,7 @@ void PlaneBuilder::add_base_indizes() {
 		plane_indz[indx+3] = plane_vert_start+i+1;
 	}
 
-	plane_vert_start = (ms.x_dim-1)*ms.z_dim+ms.z_dim-1;
+	plane_vert_start += ms.z_dim-1;
 	base_start_vert += ms.z_dim-1;
 	for(int i{0}; i != ms.x_dim-1; ++i, indx+=6) {
 		plane_indz[indx+1] = plane_vert_start-i*ms.z_dim;
@@ -327,7 +327,7 @@ void PlaneBuilder::add_base_indizes() {
 
 	plane_vert_start = ms.z_dim-1;
 	base_start_vert += ms.x_dim-1;
-	for(int i{0}; i != ms.x_dim-2; ++i, indx+=6) {
+	for(int i{0}; i != ms.z_dim-2; ++i, indx+=6) {
 		plane_indz[indx+1] = plane_vert_start-i;
 		plane_indz[indx+2] = base_start_vert+i;
 		plane_indz[indx+0] = base_start_vert+(i+1);
@@ -339,7 +339,7 @@ void PlaneBuilder::add_base_indizes() {
 
 	//add last two triangles by hand, stupid in loop:
 	plane_indz[indx+1] = 1;
-	plane_indz[indx+2] = base_start_vert + ms.x_dim-2;
+	plane_indz[indx+2] = base_start_vert + ms.z_dim-2;
 	plane_indz[indx+0] = vbuf_indzs[1];
 
 	plane_indz[indx+4] = 1;
