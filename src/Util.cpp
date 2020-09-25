@@ -17,6 +17,22 @@ void PosNormalColorVertex::init() {
         .end();
 }
 
+NoiseMods::NoiseMods(
+  float x_stretch,
+  float z_stretch,
+  const ModelSpecs& ms,
+  const std::function<float(int x, int z)>& res_fill_func
+)
+	: res_stretch{ new float[ms.x_dim*ms.z_dim] },
+	  x_stretch{x_stretch},
+	  z_stretch{z_stretch} {
+	
+	int indx{0};
+	for(int i{0}; i != ms.x_dim; ++i)
+		for(int j{0}; j != ms.z_dim; ++j, ++indx)
+			res_stretch[indx] = res_fill_func(i, j);
+}
+
 bgfx::ShaderHandle load_shader(const char *name) {
     char *data = new char[2048];
     std::ifstream file;
@@ -62,8 +78,8 @@ void add_normal(PosNormalColorVertex *vert_target,
     fl_target[5] = vc_norm.z;
 }
 
-float get_noise_mdfd(float x, float y, FastNoise fn, NoiseMods nm) {
-	return nm.res_stretch*fn.GetNoise(nm.x_stretch*x, nm.y_stretch*y);
+float get_noise_mdfd(int res_indx, float x, float z, FastNoise fn, NoiseMods nm) {
+	return nm.res_stretch[res_indx]*fn.GetNoise(nm.x_stretch*x, nm.z_stretch*z);
 }
 
 };

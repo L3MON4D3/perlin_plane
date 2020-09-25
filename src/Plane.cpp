@@ -99,11 +99,12 @@ void Plane::add_plane_vertices(const FastNoise& fn) {
 		for(int j {0}; j != ms.z_dim*ms.res; j+=ms.res, ++indx)
 			plane_verts[indx+offset] =
 			plane_verts[indx       ] = { float(i-(ms.x_dim-1)*ms.res/2.0),
-			                             util::get_noise_mdfd(i, j, fn, nm),
+			                             util::get_noise_mdfd(indx, i, j, fn, nm),
 			                             float(j-(ms.z_dim-1)*ms.res/2.0), 
 			                             0, 0, 0,
 			                             0xff666666 };
 }
+
 void Plane::add_base_vertices(float y_start) {
 	/* Example Vertex Layout: (add start_vert)
 	 * 6 5 4
@@ -231,7 +232,7 @@ float* Plane::get_raw_noise(const FastNoise& fn) {
 	int indx {0};
 	for(int i {0}; i != ms.x_dim*ms.res; i+=ms.res)
 		for(int j {0}; j != ms.z_dim*ms.res; j+=ms.res, ++indx)
-			ns[indx] = util::get_noise_mdfd(i, j, fn, nm);
+			ns[indx] = util::get_noise_mdfd(indx, i, j, fn, nm);
 	return ns;
 }
 
