@@ -1,5 +1,5 @@
 #include "Util.hpp"
-#include "PlaneBuilder.hpp"
+#include "Plane.hpp"
 #include "Frame.hpp"
 
 #include "bgfx/bgfx.h"
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(std::rand());
 	worldWp::ModelSpecs specs {10, 10, 9};
-    worldWp::PlaneBuilder plane(specs, fn, {2, 2, 40});
+    worldWp::Plane plane(specs, fn, {2, 2, 40});
 
 	worldWp::Frame frame {specs};
     //Call renderFrame before init (in create_window) to render on this thread.

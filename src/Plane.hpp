@@ -20,9 +20,9 @@ enum Dimension {
 	X, Y, Z
 };
 
-class PlaneBuilder {
+class Plane {
 public:
-	PlaneBuilder(
+	Plane(
 	  const ModelSpecs& ms,
 	  const FastNoise& fn,
 	  const worldWp::util::NoiseMods& nm );

@@ -1,4 +1,4 @@
-#include "PlaneBuilder.hpp"
+#include "Plane.hpp"
 #include "Util.hpp"
 #include "bx/math.h"
 
@@ -15,7 +15,7 @@ std::ostream& operator<<(std::ostream& out, util::PosNormalColorVertex& v) {
 	return out << "{" << v.pos[0] << ", " << v.pos[1] << ", " << v.pos[2] << "}";
 }
 
-PlaneBuilder::PlaneBuilder(
+Plane::Plane(
   const ModelSpecs& ms,
   const FastNoise& fn,
   const worldWp::util::NoiseMods& nm
@@ -75,7 +75,7 @@ PlaneBuilder::PlaneBuilder(
 	}
 }
 
-void PlaneBuilder::add_normals() {
+void Plane::add_normals() {
 	for(int i {0}; i != (ms.x_dim-1)*ms.z_dim; ++i) {
 		worldWp::util::add_normal(&plane_verts[i],
 			//pass pos of each Vertex
@@ -90,7 +90,7 @@ void PlaneBuilder::add_normals() {
 	}
 }
 
-void PlaneBuilder::add_plane_vertices(const FastNoise& fn) {
+void Plane::add_plane_vertices(const FastNoise& fn) {
 	//fill plane_verts with values from fn.
 	//indx = i*j at any point in loop.
 	int indx {0};
@@ -104,7 +104,7 @@ void PlaneBuilder::add_plane_vertices(const FastNoise& fn) {
 			                             0, 0, 0,
 			                             0xff666666 };
 }
-void PlaneBuilder::add_base_vertices(float y_start) {
+void Plane::add_base_vertices(float y_start) {
 	/* Example Vertex Layout: (add start_vert)
 	 * 6 5 4
 	 * 7   3
@@ -152,7 +152,7 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 	                     0xff555555};
 }
 
-void PlaneBuilder::add_base_indizes() {
+void Plane::add_base_indizes() {
 	int start_indx{ibuf_indzs[0]},
 	    base_start_vert{vbuf_indzs[0]};
 
@@ -225,7 +225,7 @@ void PlaneBuilder::add_base_indizes() {
 	plane_indz[indx+5] = base_start_vert+2;
 }
 
-float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
+float* Plane::get_raw_noise(const FastNoise& fn) {
 	float* ns {new float[ms.x_dim*ms.z_dim]};
 
 	int indx {0};
@@ -235,19 +235,19 @@ float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
 	return ns;
 }
 
-bgfx::IndexBufferHandle PlaneBuilder::getIBufferHandle() {
+bgfx::IndexBufferHandle Plane::getIBufferHandle() {
 	return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
 		ibuf_indzs[1]*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 }
 
-bgfx::VertexBufferHandle PlaneBuilder::getVBufferHandle() {
+bgfx::VertexBufferHandle Plane::getVBufferHandle() {
 	return bgfx::createVertexBuffer(
 		bgfx::makeRef(plane_verts,
 			vbuf_indzs[1]*sizeof(util::PosNormalColorVertex)),
 			util::PosNormalColorVertex::layout);
 }
 
-void PlaneBuilder::for_each_vertex(
+void Plane::for_each_vertex(
   const std::function<void(util::PosNormalColorVertex&, int indx)>& fn
 ) {
 	for(int i{0}; i != ms.x_dim*ms.z_dim; ++i) {

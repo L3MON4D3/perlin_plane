@@ -1,7 +1,7 @@
 add_executable(worldWP
     main.cpp
     Util.cpp
-    PlaneBuilder.cpp
+    Plane.cpp
 	Frame.cpp
 )
 

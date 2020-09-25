@@ -2,7 +2,7 @@
 #define FRAME_H_
 
 #include "Util.hpp"
-#include "PlaneBuilder.hpp"
+#include "Plane.hpp"
 
 #include "bgfx/bgfx.h"
 
