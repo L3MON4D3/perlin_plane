@@ -41,13 +41,6 @@ private:
 	uint32_t *plane_indz;
 
 	void add_plane_vertices(const FastNoise& fn);
-	void add_frame_vertices_2d(
-	  Dimension dim,
-	  bx::Vec3 pos, float dim1, float dim2,
-	  int start_pos );
-
-	void add_frame();
-	void add_frame_indzs(int start_indx, int vert_offset);
 
 	void add_base_vertices(float y_start);
 	void add_base_indizes();

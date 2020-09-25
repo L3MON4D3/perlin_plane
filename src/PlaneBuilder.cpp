@@ -6,56 +6,10 @@
 #include <iostream>
 #include <ostream>
 
-int ibuf_indzs[4],
-    vbuf_indzs[4];
-
-const float frame_width = .3;
-
-//eight triangles, both side, 3 verts per triangle.
-const int frame_indzs_count = 8*3*2;
+int ibuf_indzs[2],
+    vbuf_indzs[2];
 
 namespace worldWp {
-
-//offsets from an xy coordinate to construct a frame.
-const float frame_verts[12][2] {
-	{0          , 0          },
-	{frame_width, 0          },
-	{frame_width, frame_width},
-
-	{0, 0          },
-	{0, frame_width},
-	{-frame_width          , frame_width},
-
-	{0, 0},
-	{-frame_width          , 0},
-	{0          ,           -frame_width},
-
-	{0          , 0},
-	{0          ,           -frame_width},
-	{frame_width,           -frame_width}
-};
-
-const uint32_t frame_indzs[frame_indzs_count] {
-	 1,  2,  4,
-	 1,  4,  2,
-	 1,  4,  3,
-	 1,  3,  4,
-
-	 4,  5,  7,
-	 4,  7,  5,
-	 4,  7,  6,
-	 4,  6,  7,
-
-	 7,  8, 10,
-	 7, 10,  8,
-	 7, 10,  9,
-	 7,  9, 10,
-
-	10, 11,  1,
-	10,  1, 11,
-	10,  1,  0,
-	10,  0,  1
-};
 
 std::ostream& operator<<(std::ostream& out, util::PosNormalColorVertex& v) {
 	return out << "{" << v.pos[0] << ", " << v.pos[1] << ", " << v.pos[2] << "}";
@@ -70,20 +24,17 @@ PlaneBuilder::PlaneBuilder(
 	  nm{ nm } {
 
 	vbuf_indzs[0] =                 ms.x_dim*ms.z_dim*2,
-	vbuf_indzs[1] = vbuf_indzs[0] + 12*6,
-	vbuf_indzs[2] = vbuf_indzs[1] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4,
+	vbuf_indzs[1] = vbuf_indzs[0] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4,
 
 	ibuf_indzs[0] =                 (ms.x_dim-1)*(ms.z_dim-1)*2*2*3,
-	ibuf_indzs[1] = ibuf_indzs[0] + frame_indzs_count*6,
-	ibuf_indzs[2] = ibuf_indzs[1] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6;
+	ibuf_indzs[1] = ibuf_indzs[0] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6;
 
 	//double space, store duplicate indizes ith different normals.
-	plane_verts = new worldWp::util::PosNormalColorVertex[ibuf_indzs[2]];
-	plane_indz = new uint32_t[ibuf_indzs[2]];
+	plane_verts = new worldWp::util::PosNormalColorVertex[ibuf_indzs[1]];
+	plane_indz = new uint32_t[ibuf_indzs[1]];
 
 	add_plane_vertices(fn);
 	add_normals();
-	add_frame();
 	add_base_vertices(-40);
 	add_base_indizes();
 
@@ -153,98 +104,13 @@ void PlaneBuilder::add_plane_vertices(const FastNoise& fn) {
 			                             0, 0, 0,
 			                             0xff666666 };
 }
-
-void PlaneBuilder::add_frame_vertices_2d(
-  Dimension dim,
-  bx::Vec3 pos, float dim1_sz, float dim2_sz,
-  int start_pos
-) {
-	int dim0{ static_cast<int>(dim) },
-	    dim1{ (dim0+1)%3 },
-	    dim2{ (dim1+1)%3 };
-
-	//initialize all verices here, assign correct position later.
-	for(int i{0}; i != 12; ++i)
-		plane_verts[start_pos+i] = {0,0,0, 0,1,0, 0xff111111};
-
-	float* pos_f = ((float*)&pos);
-	float corners[4][2] {
-		{pos_f[dim1]        , pos_f[dim2]        },
-		{pos_f[dim1]+dim1_sz, pos_f[dim2]        },
-		{pos_f[dim1]+dim1_sz, pos_f[dim2]+dim2_sz},
-		{pos_f[dim1]        , pos_f[dim2]+dim2_sz}
-	};
-
-	int indx{0};
-	for(int i{0}; i != 4; ++i) {
-		for(int j{0}; j != 3; ++j, ++indx) {
-			util::PosNormalColorVertex& v{ plane_verts[start_pos+indx] };
-			v.pos[dim0] = pos_f[dim0];
-			v.pos[dim1] = corners[i][0]+frame_verts[indx][0];
-			v.pos[dim2] = corners[i][1]+frame_verts[indx][1];
-		}
-	}
-}
-
-void PlaneBuilder::add_frame() {
-	int vert_offset{vbuf_indzs[0]},
-	    indx_offset{ibuf_indzs[0]};
-
-	//add some offset to frame so polygons dont overlap.
-	float x_length{float((ms.x_dim-1)*ms.res)+.01f},
-	      z_length{float((ms.z_dim-1)*ms.res)+.01f},
-		  height{x_length*2},
-		  y_start{-x_length};
-
-	add_frame_vertices_2d(Dimension::Y,
-		{ -x_length/2, y_start, -z_length/2 },
-		z_length, x_length, vert_offset );
-	add_frame_indzs(indx_offset, vert_offset);
-	vert_offset += 12, indx_offset += frame_indzs_count;
-
-	add_frame_vertices_2d(Dimension::Y,
-		{ -x_length/2, y_start+height, -z_length/2 },
-		z_length, x_length, vert_offset );
-	add_frame_indzs(indx_offset, vert_offset);
-	vert_offset += 12, indx_offset += frame_indzs_count;
-
-	add_frame_vertices_2d(Dimension::Z,
-		{ -x_length/2, y_start, -z_length/2 },
-		x_length, height, vert_offset );
-	add_frame_indzs(indx_offset, vert_offset);
-	vert_offset += 12, indx_offset += frame_indzs_count;
-
-	add_frame_vertices_2d(Dimension::Z,
-		{ -x_length/2, y_start, z_length/2 },
-		x_length, height, vert_offset );
-	add_frame_indzs(indx_offset, vert_offset);
-	vert_offset += 12, indx_offset += frame_indzs_count;
-
-	add_frame_vertices_2d(Dimension::X,
-		{ x_length/2, y_start, -z_length/2 },
-		height, z_length, vert_offset );
-	add_frame_indzs(indx_offset, vert_offset);
-	vert_offset += 12, indx_offset += frame_indzs_count;
-
-	add_frame_vertices_2d(Dimension::X,
-		{ -x_length/2, y_start, -z_length/2 },
-		height, z_length, vert_offset );
-	add_frame_indzs(indx_offset, vert_offset);
-	vert_offset += 12, indx_offset += frame_indzs_count;
-}
-
-void PlaneBuilder::add_frame_indzs(int start_indx, int vertex_offset) {
-	for(int i{0}; i != frame_indzs_count; ++i)
-		plane_indz[start_indx+i] = frame_indzs[i]+vertex_offset;
-}
-
 void PlaneBuilder::add_base_vertices(float y_start) {
 	/* Example Vertex Layout: (add start_vert)
 	 * 6 5 4
 	 * 7   3
 	 * 0 1 2
 	 */
-	int start_vert{vbuf_indzs[1]};
+	int start_vert{vbuf_indzs[0]};
 	for(int i{start_vert}; i != start_vert + (ms.x_dim-1+ms.z_dim-1)*2; ++i)
 		plane_verts[i] = {0,y_start,0, 0,1,1, 0xff666666};
 	
@@ -287,8 +153,8 @@ void PlaneBuilder::add_base_vertices(float y_start) {
 }
 
 void PlaneBuilder::add_base_indizes() {
-	int start_indx{ibuf_indzs[1]},
-	    base_start_vert{vbuf_indzs[1]};
+	int start_indx{ibuf_indzs[0]},
+	    base_start_vert{vbuf_indzs[0]};
 
 	int indx{start_indx};
 	for(int i{0}; i != ms.x_dim-1; ++i, indx+=6) {
@@ -340,16 +206,16 @@ void PlaneBuilder::add_base_indizes() {
 	//add last two triangles by hand, stupid in loop:
 	plane_indz[indx+1] = 1;
 	plane_indz[indx+2] = base_start_vert + ms.z_dim-2;
-	plane_indz[indx+0] = vbuf_indzs[1];
+	plane_indz[indx+0] = vbuf_indzs[0];
 
 	plane_indz[indx+4] = 1;
-	plane_indz[indx+5] = vbuf_indzs[1];
+	plane_indz[indx+5] = vbuf_indzs[0];
 	plane_indz[indx+3] = 0;
 	indx+=6;
 
 	//add rectangle on bottom of base.
 	//index of first base-rectangle-vertex.
-	base_start_vert = vbuf_indzs[2]-4;
+	base_start_vert = vbuf_indzs[1]-4;
 	plane_indz[indx  ] = base_start_vert;
 	plane_indz[indx+1] = base_start_vert+2;
 	plane_indz[indx+2] = base_start_vert+1;
@@ -371,13 +237,13 @@ float* PlaneBuilder::get_raw_noise(const FastNoise& fn) {
 
 bgfx::IndexBufferHandle PlaneBuilder::getIBufferHandle() {
 	return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
-		ibuf_indzs[2]*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
+		ibuf_indzs[1]*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
 }
 
 bgfx::VertexBufferHandle PlaneBuilder::getVBufferHandle() {
 	return bgfx::createVertexBuffer(
 		bgfx::makeRef(plane_verts,
-			vbuf_indzs[2]*sizeof(util::PosNormalColorVertex)),
+			vbuf_indzs[1]*sizeof(util::PosNormalColorVertex)),
 			util::PosNormalColorVertex::layout);
 }
 

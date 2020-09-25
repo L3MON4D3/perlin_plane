@@ -1,5 +1,6 @@
 #include "Util.hpp"
 #include "PlaneBuilder.hpp"
+#include "Frame.hpp"
 
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
@@ -56,7 +57,9 @@ int main(int argc, char** argv) {
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(std::rand());
 	worldWp::ModelSpecs specs {10, 10, 9};
-    worldWp::PlaneBuilder builder(specs, fn, {2, 2, 40});
+    worldWp::PlaneBuilder plane(specs, fn, {2, 2, 40});
+
+	worldWp::Frame frame {specs};
     //Call renderFrame before init (in create_window) to render on this thread.
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
@@ -71,14 +74,17 @@ int main(int argc, char** argv) {
     const ViewId clearView = 0;
     setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x282828ff, 1.0f, 0);
 
-    VertexBufferHandle vbh = builder.getVBufferHandle();
+    VertexBufferHandle vbh = plane.getVBufferHandle();
     //VertexBufferHandle vbh = createVertexBuffer(
     //    makeRef(cubeVertices, sizeof(cubeVertices)),
     //    worldWp::PosNormalColorVertex::layout);
 
-    IndexBufferHandle ibh = builder.getIBufferHandle();
+    IndexBufferHandle ibh = plane.getIBufferHandle();
     //IndexBufferHandle ibh = createIndexBuffer(
     //	makeRef(cubeTriList, sizeof(cubeTriList)));
+
+	VertexBufferHandle frame_vbh{frame.getVBufferHandle()};
+	IndexBufferHandle frame_ibh{frame.getIBufferHandle()};
 
     ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
     ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
@@ -107,10 +113,10 @@ int main(int argc, char** argv) {
 
 		if (frame_ctr == 0) {
 			fn.SetSeed(std::rand());
-			float* new_noise = builder.get_raw_noise(fn);
+			float* new_noise = plane.get_raw_noise(fn);
 
 			offset_noise = new float[specs.x_dim*specs.z_dim];
-			builder.for_each_vertex(
+			plane.for_each_vertex(
 				[new_noise, offset_noise, tran_length]
 				(worldWp::util::PosNormalColorVertex& v, int i) {
 					//offset_nose is difference between new and old noise.
@@ -118,14 +124,14 @@ int main(int argc, char** argv) {
 			});
 		}
 
-		builder.for_each_vertex(
+		plane.for_each_vertex(
 			[offset_noise](worldWp::util::PosNormalColorVertex& v, int i) {
 				v.pos[1]+=offset_noise[i];
 		});
-		builder.add_normals();
+		plane.add_normals();
 		//IMPORTANT!!!
 		bgfx::destroy(vbh);
-		vbh = builder.getVBufferHandle();
+		vbh = plane.getVBufferHandle();
 
         bx::Vec3 at  {0, 0, 0};
         bx::Vec3 eye {0, 70*2, 100*2};
@@ -147,24 +153,21 @@ int main(int argc, char** argv) {
         touch(clearView);
 
         float mtx[16];
-        bx::mtxRotateY(mtx, 0);
         bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.001));
-        //bx::mtxRotateY(mtx, bx::kPiQuarter);
-		//float center{specs.x_dim*specs.z_dim*specs.res/2.0f};
 
-		//mtx[12] = 0,
-		//mtx[13] = 0,
-		//mtx[14] = 0;
-
+		//submit plane+base.
         bgfx::setTransform(mtx);
-
         bgfx::setVertexBuffer(0, vbh);
         bgfx::setIndexBuffer(ibh);
-        bgfx::setState(BGFX_STATE_DEFAULT | BGFX_STATE_MSAA);
-
         bgfx::submit(clearView, program);
 
-        frame();
+		//submit Frame.
+		bgfx::setTransform(mtx);
+		bgfx::setVertexBuffer(0, frame_vbh);
+        bgfx::setIndexBuffer(frame_ibh);
+		bgfx::submit(clearView, program);
+
+		bgfx::frame();
     }
 
 	delete offset_noise;
