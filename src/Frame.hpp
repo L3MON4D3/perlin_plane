@@ -10,12 +10,12 @@ namespace worldWp {
 
 class Frame {
 public:
-	Frame(const ModelSpecs& ms);
+	Frame(const util::ModelSpecs& ms);
 
 	bgfx::VertexBufferHandle getVBufferHandle();
 	bgfx::IndexBufferHandle getIBufferHandle();
 private:
-	ModelSpecs ms;
+	util::ModelSpecs ms;
 	worldWp::util::PosNormalColorVertex *verts;
 	uint16_t *indz;
 

@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& out, util::PosNormalColorVertex& v) {
 }
 
 Plane::Plane(
-  const ModelSpecs& ms,
+  const util::ModelSpecs& ms,
   const FastNoise& fn,
   const worldWp::util::NoiseMods& nm
 )

@@ -10,12 +10,6 @@
 
 namespace worldWp {
 
-struct ModelSpecs {
-	int x_dim,
-	    z_dim,
-	    res;
-};
-
 enum Dimension {
 	X, Y, Z
 };
@@ -23,7 +17,7 @@ enum Dimension {
 class Plane {
 public:
 	Plane(
-	  const ModelSpecs& ms,
+	  const util::ModelSpecs& ms,
 	  const FastNoise& fn,
 	  const worldWp::util::NoiseMods& nm );
 
@@ -35,7 +29,7 @@ public:
 	float* get_raw_noise(const FastNoise& fn);
 	void add_normals();
 private:
-	ModelSpecs ms;
+	util::ModelSpecs ms;
 	worldWp::util::NoiseMods nm;
 	worldWp::util::PosNormalColorVertex *plane_verts;
 	uint32_t *plane_indz;

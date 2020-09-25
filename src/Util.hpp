@@ -8,6 +8,12 @@
 namespace worldWp {
 namespace util {
 
+struct ModelSpecs {
+	int x_dim,
+	    z_dim,
+	    res;
+};
+
 struct NoiseMods {
 	float x_stretch,
 	      y_stretch,

@@ -51,7 +51,7 @@ const int ibuf_sz{frame_indzs_count*6},
 
 namespace worldWp {
 
-Frame::Frame(const ModelSpecs& ms)
+Frame::Frame(const util::ModelSpecs& ms)
 	: ms{ms},
 	  verts{ new util::PosNormalColorVertex[vbuf_sz] },
 	  indz{ new uint16_t[ibuf_sz] } {

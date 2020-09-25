@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(std::rand());
-	worldWp::ModelSpecs specs {10, 10, 9};
+	worldWp::util::ModelSpecs specs {10, 10, 9};
     worldWp::Plane plane(specs, fn, {2, 2, 40});
 
 	worldWp::Frame frame {specs};
