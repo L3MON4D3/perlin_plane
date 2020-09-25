@@ -198,13 +198,13 @@ void PlaneBuilder::add_frame_vertices() {
 
 	add_frame_vertices_2d(Dimension::Y,
 		{ -x_length/2, y_start, -z_length/2 },
-		x_length, z_length, vert_offset );
+		z_length, x_length, vert_offset );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
 	add_frame_vertices_2d(Dimension::Y,
 		{ -x_length/2, y_start+height, -z_length/2 },
-		x_length, z_length, vert_offset );
+		z_length, x_length, vert_offset );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
