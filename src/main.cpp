@@ -7,13 +7,22 @@
 #include "bgfx/platform.h"
 #include "bx/math.h"
 
+#include <cmath>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <GLFW/glfw3.h>
 
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
 
+
+const worldWp::util::ModelSpecs specs {10, 10, 9};
+const std::function<float(int x, int z)> edge_smooth_mod { [](int x, int z){
+    	return std::sin(float(x)/(specs.x_dim-1)*bx::kPi)
+		      *std::sin(float(z)/(specs.z_dim-1)*bx::kPi)*80;
+	}
+};
 
 bgfx::VertexLayout worldWp::util::PosNormalColorVertex::layout;
 
@@ -56,10 +65,7 @@ int main(int argc, char** argv) {
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(std::rand());
-	worldWp::util::ModelSpecs specs {10, 10, 9};
-    worldWp::Plane plane(specs, fn, {2, 2, specs, [](int x, int z){
-    	return 60;
-    } });
+    worldWp::Plane plane(specs, fn, {2, 2, specs, edge_smooth_mod});
 
 	worldWp::Frame frame {specs};
     //Call renderFrame before init (in create_window) to render on this thread.
