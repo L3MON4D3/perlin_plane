@@ -21,11 +21,13 @@ NoiseMods::NoiseMods(
   float x_stretch,
   float z_stretch,
   const ModelSpecs& ms,
-  const std::function<float(int x, int z)>& res_fill_func
+  const std::function<float(int x, int z)>& res_fill_func,
+  std::function<float(float noise)> post_mod
 )
 	: res_stretch{ new float[ms.x_dim*ms.z_dim] },
 	  x_stretch{x_stretch},
-	  z_stretch{z_stretch} {
+	  z_stretch{z_stretch},
+	  post_mod{post_mod} {
 	
 	int indx{0};
 	for(int i{0}; i != ms.x_dim; ++i)
@@ -79,7 +81,7 @@ void add_normal(PosNormalColorVertex *vert_target,
 }
 
 float get_noise_mdfd(int res_indx, float x, float z, FastNoise fn, NoiseMods nm) {
-	return nm.res_stretch[res_indx]*fn.GetNoise(nm.x_stretch*x, nm.z_stretch*z);
+	return nm.post_mod(nm.res_stretch[res_indx]*fn.GetNoise(nm.x_stretch*x, nm.z_stretch*z));
 }
 
 };

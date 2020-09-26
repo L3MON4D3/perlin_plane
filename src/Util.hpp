@@ -20,11 +20,14 @@ struct NoiseMods {
 	  float x_stretch,
 	  float y_stretch,
 	  const ModelSpecs& ms,
-	  const std::function<float(int x, int z)>& res_fill_func);
+	  const std::function<float(int x, int z)>& res_fill_func,
+	  std::function<float(float noise_val)> post_mod
+	);
 
 	float x_stretch,
 	      z_stretch,
 	      *res_stretch;
+	std::function<float(float noise_val)> post_mod;
 };
 
 struct PosNormalColorVertex {
