@@ -1,6 +1,7 @@
 #include "Util.hpp"
 #include "Plane.hpp"
 #include "Frame.hpp"
+#include "DiamondFrame.hpp"
 
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
@@ -16,8 +17,7 @@
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
 
-
-const worldWp::util::ModelSpecs specs {10, 10, 9};
+const worldWp::util::PlaneSpecs specs {10, 10, 9};
 
 const std::function<float(int x, int z)> edge_smooth_mod { [](int x, int z){
     	return std::sin(float(x)/(specs.x_dim-1)*bx::kPi)
@@ -71,12 +71,10 @@ int main(int argc, char** argv) {
     fn.SetSeed(std::rand());
     worldWp::Plane plane(specs, fn, {2, 2, specs, edge_smooth_mod, no_valley_mod});
 
-	worldWp::Frame frame {specs};
-    //Call renderFrame before init (in create_window) to render on this thread.
+	worldWp::DiamondFrame frame {specs};
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
 
-    //init should not go out of scope until program finishes.
     int width = 1000, height = 1000;
     renderFrame();
     GLFWwindow *window = create_window(width, height);
@@ -173,6 +171,7 @@ int main(int argc, char** argv) {
         bgfx::setIndexBuffer(ibh);
         bgfx::submit(clearView, program);
 
+		bgfx::setState(BGFX_STATE_DEFAULT | BGFX_STATE_PT_LINESTRIP);
 		//submit Frame.
 		bgfx::setTransform(mtx);
 		bgfx::setVertexBuffer(0, frame_vbh);

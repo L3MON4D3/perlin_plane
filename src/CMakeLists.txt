@@ -3,6 +3,7 @@ add_executable(worldWP
     Util.cpp
     Plane.cpp
 	Frame.cpp
+	DiamondFrame.cpp
 )
 
 add_library(perlin
