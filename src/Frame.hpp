@@ -1,23 +1,18 @@
 #ifndef FRAME_H_
 #define FRAME_H_
 
-#include "Util.hpp"
 #include "Plane.hpp"
+#include "Model.tpp"
 
 #include "bgfx/bgfx.h"
 
 namespace worldWp {
 
-class Frame {
+class Frame : public Model<uint16_t> {
 public:
-	Frame(const util::ModelSpecs& ms);
-
-	bgfx::VertexBufferHandle getVBufferHandle();
-	bgfx::IndexBufferHandle getIBufferHandle();
+	Frame(const util::PlaneSpecs& ms);
 private:
-	util::ModelSpecs ms;
-	worldWp::util::PosNormalColorVertex *verts;
-	uint16_t *indz;
+	util::PlaneSpecs ms;
 
 	void add_frame_vertices_2d(
 	  Dimension dim,

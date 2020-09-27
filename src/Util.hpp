@@ -9,7 +9,7 @@
 namespace worldWp {
 namespace util {
 
-struct ModelSpecs {
+struct PlaneSpecs {
 	int x_dim,
 	    z_dim,
 	    res;
@@ -19,7 +19,7 @@ struct NoiseMods {
 	NoiseMods(
 	  float x_stretch,
 	  float y_stretch,
-	  const ModelSpecs& ms,
+	  const PlaneSpecs& ms,
 	  const std::function<float(int x, int z)>& res_fill_func,
 	  std::function<float(float noise_val)> post_mod
 	);

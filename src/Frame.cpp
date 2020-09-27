@@ -51,10 +51,9 @@ const int ibuf_sz{frame_indzs_count*6},
 
 namespace worldWp {
 
-Frame::Frame(const util::ModelSpecs& ms)
-	: ms{ms},
-	  verts{ new util::PosNormalColorVertex[vbuf_sz] },
-	  indz{ new uint16_t[ibuf_sz] } {
+Frame::Frame(const util::PlaneSpecs& ms)
+	: Model{ vbuf_sz, ibuf_sz },
+	  ms{ ms } {
 	add_frame(-40.02, 90);
 }
 
@@ -138,19 +137,7 @@ void Frame::add_frame(float y_start, float height) {
 
 void Frame::add_frame_indzs(int start_indx, int vertex_offset) {
 	for(int i{0}; i != frame_indzs_count; ++i)
-		indz[start_indx+i] = frame_indzs[i]+vertex_offset;
-}
-
-bgfx::IndexBufferHandle Frame::getIBufferHandle() {
-	return bgfx::createIndexBuffer(bgfx::makeRef(indz,
-		ibuf_sz*sizeof(uint16_t)));
-}
-
-bgfx::VertexBufferHandle Frame::getVBufferHandle() {
-	return bgfx::createVertexBuffer(
-		bgfx::makeRef(verts,
-			vbuf_sz*sizeof(util::PosNormalColorVertex)),
-			util::PosNormalColorVertex::layout);
+		indzs[start_indx+i] = frame_indzs[i]+vertex_offset;
 }
 
 };

@@ -1,4 +1,5 @@
 #include "Plane.hpp"
+
 #include "Util.hpp"
 #include "bx/math.h"
 
@@ -16,29 +17,27 @@ std::ostream& operator<<(std::ostream& out, util::PosNormalColorVertex& v) {
 }
 
 Plane::Plane(
-  const util::ModelSpecs& ms,
+  const util::PlaneSpecs& ms,
   const FastNoise& fn,
   const worldWp::util::NoiseMods& nm
-)
-	: ms{ ms },
-	  nm{ nm } {
+) : Model{
+		(vbuf_indzs[0] = ms.x_dim*ms.z_dim*2) +
+		(vbuf_indzs[1] = vbuf_indzs[0] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4),
 
-	vbuf_indzs[0] =                 ms.x_dim*ms.z_dim*2,
-	vbuf_indzs[1] = vbuf_indzs[0] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4,
+		(ibuf_indzs[0] = (ms.x_dim-1)*(ms.z_dim-1)*2*2*3) +
+		(ibuf_indzs[1] = ibuf_indzs[0] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6) },
+	ms{ ms },
+	nm{ nm } {
 
-	ibuf_indzs[0] =                 (ms.x_dim-1)*(ms.z_dim-1)*2*2*3,
-	ibuf_indzs[1] = ibuf_indzs[0] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6;
+	Model<uint32_t>(vbuf_indzs[1], ibuf_indzs[1]);
 
-	//double space, store duplicate indizes ith different normals.
-	plane_verts = new worldWp::util::PosNormalColorVertex[ibuf_indzs[1]];
-	plane_indz = new uint32_t[ibuf_indzs[1]];
 
 	add_plane_vertices(fn);
 	add_normals();
-	add_base_vertices(-40);
+	add_base_vertices(0);
 	add_base_indizes();
 
-	//fill plane_indz.
+	//fill indzs.
 	int offset{ ms.x_dim*ms.z_dim };
 	{
 		int plane_x_dim{ ms.x_dim-1 },
@@ -55,50 +54,50 @@ Plane::Plane(
 				
 				int tri_start_indx {(i*plane_z_dim + j) * 12};
 				//first Triangle of "square".
-				plane_indz[tri_start_indx   ] = v3;
-				plane_indz[tri_start_indx+ 1] = v2;
-				plane_indz[tri_start_indx+ 2] = v1;
+				indzs[tri_start_indx   ] = v3;
+				indzs[tri_start_indx+ 1] = v2;
+				indzs[tri_start_indx+ 2] = v1;
 				
-				plane_indz[tri_start_indx+ 3] = v2;
-				plane_indz[tri_start_indx+ 4] = v3;
-				plane_indz[tri_start_indx+ 5] = v1;
+				indzs[tri_start_indx+ 3] = v2;
+				indzs[tri_start_indx+ 4] = v3;
+				indzs[tri_start_indx+ 5] = v1;
 				
 				//second Triangle of "square".
-				plane_indz[tri_start_indx+ 6] = v3+offset;
-				plane_indz[tri_start_indx+ 7] = v4+offset;
-				plane_indz[tri_start_indx+ 8] = v2+offset;
+				indzs[tri_start_indx+ 6] = v3+offset;
+				indzs[tri_start_indx+ 7] = v4+offset;
+				indzs[tri_start_indx+ 8] = v2+offset;
 				
-				plane_indz[tri_start_indx+ 9] = v4+offset;
-				plane_indz[tri_start_indx+10] = v3+offset;
-				plane_indz[tri_start_indx+11] = v2+offset;
+				indzs[tri_start_indx+ 9] = v4+offset;
+				indzs[tri_start_indx+10] = v3+offset;
+				indzs[tri_start_indx+11] = v2+offset;
 			}
 	}
 }
 
 void Plane::add_normals() {
 	for(int i {0}; i != (ms.x_dim-1)*ms.z_dim; ++i) {
-		worldWp::util::add_normal(&plane_verts[i],
+		worldWp::util::add_normal(&verts[i],
 			//pass pos of each Vertex
-			(float*) &plane_verts[i+1],
-			(float*) &plane_verts[i+ms.z_dim]);
+			(float*) &verts[i+1],
+			(float*) &verts[i+ms.z_dim]);
 
 		//add normals to "downward-pointing" triangle.
 		int i_offset = ms.x_dim*ms.z_dim+i+1;
-		worldWp::util::add_normal(&plane_verts[i_offset],
-			(float*) &plane_verts[i_offset+ms.z_dim],
-			(float*) &plane_verts[i_offset+ms.z_dim-1]);
+		worldWp::util::add_normal(&verts[i_offset],
+			(float*) &verts[i_offset+ms.z_dim],
+			(float*) &verts[i_offset+ms.z_dim-1]);
 	}
 }
 
 void Plane::add_plane_vertices(const FastNoise& fn) {
-	//fill plane_verts with values from fn.
+	//fill verts with values from fn.
 	//indx = i*j at any point in loop.
 	int indx {0};
 	int offset {ms.x_dim*ms.z_dim};
 	for(int i {0}; i != ms.x_dim*ms.res; i+=ms.res)
 		for(int j {0}; j != ms.z_dim*ms.res; j+=ms.res, ++indx)
-			plane_verts[indx+offset] =
-			plane_verts[indx       ] = { float(i-(ms.x_dim-1)*ms.res/2.0),
+			verts[indx+offset] =
+			verts[indx       ] = { float(i-(ms.x_dim-1)*ms.res/2.0),
 			                             util::get_noise_mdfd(indx, i, j, fn, nm),
 			                             float(j-(ms.z_dim-1)*ms.res/2.0), 
 			                             0, 0, 0,
@@ -113,7 +112,7 @@ void Plane::add_base_vertices(float y_start) {
 	 */
 	int start_vert{vbuf_indzs[0]};
 	for(int i{start_vert}; i != start_vert + (ms.x_dim-1+ms.z_dim-1)*2; ++i)
-		plane_verts[i] = {0,y_start,0, 0,1,1, 0xff666666};
+		verts[i] = {0,y_start,0, 0,1,1, 0xff666666};
 	
 	const int dirs[2] {0,  2},
 	          dir_size[2] {ms.x_dim-1, ms.z_dim-1},
@@ -130,7 +129,7 @@ void Plane::add_base_vertices(float y_start) {
 	for(int s{0}; s != 2; ++s)
 		for(int d{0}; d != 2; ++d)
 			for(int i{0}; i != dir_size[d]*ms.res; i+=ms.res, ++indx) {
-				util::PosNormalColorVertex& v{ plane_verts[indx] };
+				util::PosNormalColorVertex& v{ verts[indx] };
 				const float *corner{ corners[s*2+d] };
 
 				v.pos[dirs[d]] = corner[d] + sign[s]*i;
@@ -139,16 +138,16 @@ void Plane::add_base_vertices(float y_start) {
 			}
 
 	//add vertex at 0 (see above) with different color for underside of base.
-	plane_verts[indx] = {corners[0][0], y_start, corners[0][1],
+	verts[indx] = {corners[0][0], y_start, corners[0][1],
 	                     0,1,1,
 	                     0xff555555};
-	plane_verts[++indx] = {corners[1][0], y_start, corners[1][1],
+	verts[++indx] = {corners[1][0], y_start, corners[1][1],
 	                     0,1,1,
 	                     0xff555555};
-	plane_verts[++indx] = {corners[2][0], y_start, corners[2][1],
+	verts[++indx] = {corners[2][0], y_start, corners[2][1],
 	                     0,1,1,
 	                     0xff555555};
-	plane_verts[++indx] = {corners[3][0], y_start, corners[3][1],
+	verts[++indx] = {corners[3][0], y_start, corners[3][1],
 	                     0,1,1,
 	                     0xff555555};
 }
@@ -159,71 +158,71 @@ void Plane::add_base_indizes() {
 
 	int indx{start_indx};
 	for(int i{0}; i != ms.x_dim-1; ++i, indx+=6) {
-		plane_indz[indx+1] = i*ms.z_dim;
-		plane_indz[indx+2] = base_start_vert+i;
-		plane_indz[indx+0] = base_start_vert+i+1;
+		indzs[indx+1] = i*ms.z_dim;
+		indzs[indx+2] = base_start_vert+i;
+		indzs[indx+0] = base_start_vert+i+1;
 
-		plane_indz[indx+4] = i*ms.z_dim;
-		plane_indz[indx+5] = base_start_vert+i+1;
-		plane_indz[indx+3] = (i+1)*ms.z_dim;
+		indzs[indx+4] = i*ms.z_dim;
+		indzs[indx+5] = base_start_vert+i+1;
+		indzs[indx+3] = (i+1)*ms.z_dim;
 	}
 
 	int plane_vert_start{ (ms.x_dim-1)*ms.z_dim };
 	base_start_vert+=ms.x_dim-1;
 	for(int i{0}; i != ms.z_dim-1; ++i, indx+=6) {
-		plane_indz[indx+1] = plane_vert_start+i;
-		plane_indz[indx+2] = base_start_vert+i;
-		plane_indz[indx+0] = base_start_vert+i+1;
+		indzs[indx+1] = plane_vert_start+i;
+		indzs[indx+2] = base_start_vert+i;
+		indzs[indx+0] = base_start_vert+i+1;
 
-		plane_indz[indx+4] = plane_vert_start+i;
-		plane_indz[indx+5] = base_start_vert+i+1;
-		plane_indz[indx+3] = plane_vert_start+i+1;
+		indzs[indx+4] = plane_vert_start+i;
+		indzs[indx+5] = base_start_vert+i+1;
+		indzs[indx+3] = plane_vert_start+i+1;
 	}
 
 	plane_vert_start += ms.z_dim-1;
 	base_start_vert += ms.z_dim-1;
 	for(int i{0}; i != ms.x_dim-1; ++i, indx+=6) {
-		plane_indz[indx+1] = plane_vert_start-i*ms.z_dim;
-		plane_indz[indx+2] = base_start_vert+i;
-		plane_indz[indx+0] = base_start_vert+i+1;
+		indzs[indx+1] = plane_vert_start-i*ms.z_dim;
+		indzs[indx+2] = base_start_vert+i;
+		indzs[indx+0] = base_start_vert+i+1;
 
-		plane_indz[indx+4] = plane_vert_start-i*ms.z_dim;
-		plane_indz[indx+5] = base_start_vert+i+1;
-		plane_indz[indx+3] = plane_vert_start-(i+1)*ms.z_dim;
+		indzs[indx+4] = plane_vert_start-i*ms.z_dim;
+		indzs[indx+5] = base_start_vert+i+1;
+		indzs[indx+3] = plane_vert_start-(i+1)*ms.z_dim;
 	}
 
 	plane_vert_start = ms.z_dim-1;
 	base_start_vert += ms.x_dim-1;
 	for(int i{0}; i != ms.z_dim-2; ++i, indx+=6) {
-		plane_indz[indx+1] = plane_vert_start-i;
-		plane_indz[indx+2] = base_start_vert+i;
-		plane_indz[indx+0] = base_start_vert+(i+1);
+		indzs[indx+1] = plane_vert_start-i;
+		indzs[indx+2] = base_start_vert+i;
+		indzs[indx+0] = base_start_vert+(i+1);
 
-		plane_indz[indx+4] = plane_vert_start-i;
-		plane_indz[indx+5] = base_start_vert+(i+1);
-		plane_indz[indx+3] = plane_vert_start-(i+1);
+		indzs[indx+4] = plane_vert_start-i;
+		indzs[indx+5] = base_start_vert+(i+1);
+		indzs[indx+3] = plane_vert_start-(i+1);
 	}
 
 	//add last two triangles by hand, stupid in loop:
-	plane_indz[indx+1] = 1;
-	plane_indz[indx+2] = base_start_vert + ms.z_dim-2;
-	plane_indz[indx+0] = vbuf_indzs[0];
+	indzs[indx+1] = 1;
+	indzs[indx+2] = base_start_vert + ms.z_dim-2;
+	indzs[indx+0] = vbuf_indzs[0];
 
-	plane_indz[indx+4] = 1;
-	plane_indz[indx+5] = vbuf_indzs[0];
-	plane_indz[indx+3] = 0;
+	indzs[indx+4] = 1;
+	indzs[indx+5] = vbuf_indzs[0];
+	indzs[indx+3] = 0;
 	indx+=6;
 
 	//add rectangle on bottom of base.
 	//index of first base-rectangle-vertex.
 	base_start_vert = vbuf_indzs[1]-4;
-	plane_indz[indx  ] = base_start_vert;
-	plane_indz[indx+1] = base_start_vert+2;
-	plane_indz[indx+2] = base_start_vert+1;
+	indzs[indx  ] = base_start_vert;
+	indzs[indx+1] = base_start_vert+2;
+	indzs[indx+2] = base_start_vert+1;
 
-	plane_indz[indx+3] = base_start_vert;
-	plane_indz[indx+4] = base_start_vert+3;
-	plane_indz[indx+5] = base_start_vert+2;
+	indzs[indx+3] = base_start_vert;
+	indzs[indx+4] = base_start_vert+3;
+	indzs[indx+5] = base_start_vert+2;
 }
 
 float* Plane::get_raw_noise(const FastNoise& fn) {
@@ -236,25 +235,13 @@ float* Plane::get_raw_noise(const FastNoise& fn) {
 	return ns;
 }
 
-bgfx::IndexBufferHandle Plane::getIBufferHandle() {
-	return bgfx::createIndexBuffer(bgfx::makeRef(plane_indz,
-		ibuf_indzs[1]*sizeof(uint32_t)), BGFX_BUFFER_INDEX32);
-}
-
-bgfx::VertexBufferHandle Plane::getVBufferHandle() {
-	return bgfx::createVertexBuffer(
-		bgfx::makeRef(plane_verts,
-			vbuf_indzs[1]*sizeof(util::PosNormalColorVertex)),
-			util::PosNormalColorVertex::layout);
-}
-
 void Plane::for_each_vertex(
   const std::function<void(util::PosNormalColorVertex&, int indx)>& fn
 ) {
 	for(int i{0}; i != ms.x_dim*ms.z_dim; ++i) {
 		//apply function to both vertices (each vertex exists twice for normals).
-		fn(plane_verts[i], i);
-		fn(plane_verts[i+ms.x_dim*ms.z_dim], i);
+		fn(verts[i], i);
+		fn(verts[i+ms.x_dim*ms.z_dim], i);
 	}
 }
 

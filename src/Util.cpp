@@ -20,7 +20,7 @@ void PosNormalColorVertex::init() {
 NoiseMods::NoiseMods(
   float x_stretch,
   float z_stretch,
-  const ModelSpecs& ms,
+  const PlaneSpecs& ms,
   const std::function<float(int x, int z)>& res_fill_func,
   std::function<float(float noise)> post_mod
 )

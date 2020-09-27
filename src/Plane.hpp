@@ -2,6 +2,7 @@
 #define MODEL_BUILDER_H_
 
 #include "Util.hpp"
+#include "Model.tpp"
 
 #include "FastNoise.h"
 #include "bgfx/bgfx.h"
@@ -14,25 +15,21 @@ enum Dimension {
 	X, Y, Z
 };
 
-class Plane {
+class Plane : public Model<uint32_t> {
 public:
 	Plane(
-	  const util::ModelSpecs& ms,
+	  const util::PlaneSpecs& ms,
 	  const FastNoise& fn,
 	  const worldWp::util::NoiseMods& nm );
 
-	bgfx::VertexBufferHandle getVBufferHandle();
-	bgfx::IndexBufferHandle getIBufferHandle();
 	void for_each_vertex(
 	  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn );
 
 	float* get_raw_noise(const FastNoise& fn);
 	void add_normals();
 private:
-	util::ModelSpecs ms;
+	util::PlaneSpecs ms;
 	worldWp::util::NoiseMods nm;
-	worldWp::util::PosNormalColorVertex *plane_verts;
-	uint32_t *plane_indz;
 
 	void add_plane_vertices(const FastNoise& fn);
 
