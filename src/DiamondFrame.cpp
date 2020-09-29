@@ -19,7 +19,7 @@ const uint16_t frame_linestrip[frame_indzs_sz] {
 namespace worldWp {
 
 DiamondFrame::DiamondFrame(const util::PlaneSpecs& ms)
-	: Model(frame_vert_sz, frame_indzs_sz) {
+	: Model(frame_vert_sz, frame_indzs_sz, BGFX_STATE_PT_LINESTRIP) {
 	
 	float sidelen_x{(ms.x_dim-1)*ms.res/2.0f},
 	      sidelen_z{(ms.z_dim-1)*ms.res/2.0f};

@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
         bgfx::setIndexBuffer(ibh);
         bgfx::submit(clearView, program);
 
-		bgfx::setState(BGFX_STATE_DEFAULT | BGFX_STATE_PT_LINESTRIP);
+		bgfx::setState(BGFX_STATE_DEFAULT | frame.get_indzs_state());
 		//submit Frame.
 		bgfx::setTransform(mtx);
 		bgfx::setVertexBuffer(0, frame_vbh);

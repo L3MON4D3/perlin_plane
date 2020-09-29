@@ -52,7 +52,8 @@ const int ibuf_sz{frame_indzs_count*6},
 namespace worldWp {
 
 Frame::Frame(const util::PlaneSpecs& ms, const uint32_t abgr)
-	: Model{ vbuf_sz, ibuf_sz },
+	//pass 0 for PT, normal Triangles.
+	: Model{ vbuf_sz, ibuf_sz, 0x0000000000000000 },
 	  ms{ ms } {
 	add_frame(-40.02, 90, abgr);
 }
