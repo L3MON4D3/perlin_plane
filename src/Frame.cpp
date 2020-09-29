@@ -51,17 +51,18 @@ const int ibuf_sz{frame_indzs_count*6},
 
 namespace worldWp {
 
-Frame::Frame(const util::PlaneSpecs& ms)
+Frame::Frame(const util::PlaneSpecs& ms, const uint32_t abgr)
 	: Model{ vbuf_sz, ibuf_sz },
 	  ms{ ms } {
-	add_frame(-40.02, 90);
+	add_frame(-40.02, 90, abgr);
 }
 
 
 void Frame::add_frame_vertices_2d(
   Dimension dim,
   bx::Vec3 pos, float dim1_sz, float dim2_sz,
-  int start_pos
+  const int start_pos,
+  const uint32_t abgr
 ) {
 	int dim0{ static_cast<int>(dim) },
 	    dim1{ (dim0+1)%3 },
@@ -69,7 +70,7 @@ void Frame::add_frame_vertices_2d(
 
 	//initialize all verices here, assign correct position later.
 	for(int i{0}; i != 12; ++i)
-		verts[start_pos+i] = {0,0,0, 0,1,0, 0xff111111};
+		verts[start_pos+i] = {0,0,0, 0,1,0, abgr};
 
 	float* pos_f = ((float*)&pos);
 	float corners[4][2] {
@@ -90,7 +91,7 @@ void Frame::add_frame_vertices_2d(
 	}
 }
 
-void Frame::add_frame(float y_start, float height) {
+void Frame::add_frame(float y_start, float height, const uint32_t abgr) {
 	int vert_offset{0},
 	    indx_offset{0};
 
@@ -100,37 +101,43 @@ void Frame::add_frame(float y_start, float height) {
 
 	add_frame_vertices_2d(Dimension::Y,
 		{ -x_length/2, y_start, -z_length/2 },
-		z_length, x_length, vert_offset );
+		z_length, x_length, vert_offset,
+		abgr );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
 	add_frame_vertices_2d(Dimension::Y,
 		{ -x_length/2, y_start+height, -z_length/2 },
-		z_length, x_length, vert_offset );
+		z_length, x_length, vert_offset,
+		abgr );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
 	add_frame_vertices_2d(Dimension::Z,
 		{ -x_length/2, y_start, -z_length/2 },
-		x_length, height, vert_offset );
+		x_length, height, vert_offset,
+		abgr );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
 	add_frame_vertices_2d(Dimension::Z,
 		{ -x_length/2, y_start, z_length/2 },
-		x_length, height, vert_offset );
+		x_length, height, vert_offset,
+		abgr );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
 	add_frame_vertices_2d(Dimension::X,
 		{ x_length/2, y_start, -z_length/2 },
-		height, z_length, vert_offset );
+		height, z_length, vert_offset,
+		abgr );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 
 	add_frame_vertices_2d(Dimension::X,
 		{ -x_length/2, y_start, -z_length/2 },
-		height, z_length, vert_offset );
+		height, z_length, vert_offset,
+		abgr );
 	add_frame_indzs(indx_offset, vert_offset);
 	vert_offset += 12, indx_offset += frame_indzs_count;
 }

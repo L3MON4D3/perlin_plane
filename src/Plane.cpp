@@ -19,7 +19,8 @@ std::ostream& operator<<(std::ostream& out, util::PosNormalColorVertex& v) {
 Plane::Plane(
   const util::PlaneSpecs& ms,
   const FastNoise& fn,
-  const worldWp::util::NoiseMods& nm
+  const worldWp::util::NoiseMods& nm,
+  const uint32_t abgr
 ) : Model{
 		(vbuf_indzs[0] = ms.x_dim*ms.z_dim*2) +
 		(vbuf_indzs[1] = vbuf_indzs[0] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4),
@@ -32,9 +33,9 @@ Plane::Plane(
 	Model<uint32_t>(vbuf_indzs[1], ibuf_indzs[1]);
 
 
-	add_plane_vertices(fn);
+	add_plane_vertices(fn, abgr);
 	add_normals();
-	add_base_vertices(0);
+	add_base_vertices(0, abgr);
 	add_base_indizes();
 
 	//fill indzs.
@@ -89,7 +90,7 @@ void Plane::add_normals() {
 	}
 }
 
-void Plane::add_plane_vertices(const FastNoise& fn) {
+void Plane::add_plane_vertices(const FastNoise& fn, const uint32_t abgr) {
 	//fill verts with values from fn.
 	//indx = i*j at any point in loop.
 	int indx {0};
@@ -101,10 +102,10 @@ void Plane::add_plane_vertices(const FastNoise& fn) {
 			                             util::get_noise_mdfd(indx, i, j, fn, nm),
 			                             float(j-(ms.z_dim-1)*ms.res/2.0), 
 			                             0, 0, 0,
-			                             0xff666666 };
+			                             abgr };
 }
 
-void Plane::add_base_vertices(float y_start) {
+void Plane::add_base_vertices(float y_start, const uint32_t abgr) {
 	/* Example Vertex Layout: (add start_vert)
 	 * 6 5 4
 	 * 7   3
@@ -112,7 +113,7 @@ void Plane::add_base_vertices(float y_start) {
 	 */
 	int start_vert{vbuf_indzs[0]};
 	for(int i{start_vert}; i != start_vert + (ms.x_dim-1+ms.z_dim-1)*2; ++i)
-		verts[i] = {0,y_start,0, 0,1,1, 0xff666666};
+		verts[i] = {0,y_start,0, 0,1,1, abgr};
 	
 	const int dirs[2] {0,  2},
 	          dir_size[2] {ms.x_dim-1, ms.z_dim-1},
@@ -139,17 +140,17 @@ void Plane::add_base_vertices(float y_start) {
 
 	//add vertex at 0 (see above) with different color for underside of base.
 	verts[indx] = {corners[0][0], y_start, corners[0][1],
-	                     0,1,1,
-	                     0xff555555};
+	                     0,.5,1,
+	                     abgr};
 	verts[++indx] = {corners[1][0], y_start, corners[1][1],
-	                     0,1,1,
-	                     0xff555555};
+	                     0,.5,1,
+	                     abgr};
 	verts[++indx] = {corners[2][0], y_start, corners[2][1],
-	                     0,1,1,
-	                     0xff555555};
+	                     0,.5,1,
+	                     abgr};
 	verts[++indx] = {corners[3][0], y_start, corners[3][1],
-	                     0,1,1,
-	                     0xff555555};
+	                     0,.5,1,
+	                     abgr};
 }
 
 void Plane::add_base_indizes() {

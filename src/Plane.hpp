@@ -20,7 +20,8 @@ public:
 	Plane(
 	  const util::PlaneSpecs& ms,
 	  const FastNoise& fn,
-	  const worldWp::util::NoiseMods& nm );
+	  const util::NoiseMods& nm,
+	  const uint32_t abgr );
 
 	void for_each_vertex(
 	  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn );
@@ -31,9 +32,9 @@ private:
 	util::PlaneSpecs ms;
 	worldWp::util::NoiseMods nm;
 
-	void add_plane_vertices(const FastNoise& fn);
+	void add_plane_vertices(const FastNoise& fn, const uint32_t abgr);
 
-	void add_base_vertices(float y_start);
+	void add_base_vertices(float y_start, const uint32_t abgr);
 	void add_base_indizes();
 };
 

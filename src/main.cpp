@@ -28,6 +28,10 @@ const std::function<float(float noise)> no_valley_mod { [](float noise){
 	return noise > 0 ? noise : 0;
 }};
 
+const std::function<float(float noise)> no_mod { [](float noise){
+	return noise;
+}};
+
 bgfx::VertexLayout worldWp::util::PosNormalColorVertex::layout;
 
 /**
@@ -69,9 +73,9 @@ int main(int argc, char** argv) {
     FastNoise fn;
     fn.SetNoiseType(FastNoise::Perlin);
     fn.SetSeed(std::rand());
-    worldWp::Plane plane(specs, fn, {2, 2, specs, edge_smooth_mod, no_valley_mod});
+    worldWp::Plane plane(specs, fn, {2, 2, specs, edge_smooth_mod, no_mod}, 0xffcccccc);
 
-	worldWp::DiamondFrame frame {specs};
+	worldWp::Frame frame {specs, 0xff111111};
     glfwInit();
     glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
 
