@@ -21,16 +21,16 @@ Plane::Plane(
   const FastNoise& fn,
   const worldWp::util::NoiseMods& nm,
   const uint32_t abgr
-) : Model{
+)
+	: Model{
 		(vbuf_indzs[0] = ms.x_dim*ms.z_dim*2) +
 		(vbuf_indzs[1] = vbuf_indzs[0] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4),
 
 		(ibuf_indzs[0] = (ms.x_dim-1)*(ms.z_dim-1)*2*2*3) +
 		(ibuf_indzs[1] = ibuf_indzs[0] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6),
 		0x0000000000000000 },
-	ms{ ms },
-	nm{ nm } {
-
+	  ms{ ms },
+	  nm{ nm } {
 	add_plane_vertices(fn, abgr);
 	add_normals();
 	add_base_vertices(0, abgr);
