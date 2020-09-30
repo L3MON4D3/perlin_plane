@@ -24,15 +24,47 @@ NoiseMods::NoiseMods(
   const std::function<float(int x, int z)>& res_fill_func,
   std::function<float(float noise)> post_mod
 )
-	: res_stretch{ new float[ms.x_dim*ms.z_dim] },
+	: res_stretch_sz{ms.x_dim*ms.z_dim},
 	  x_stretch{x_stretch},
 	  z_stretch{z_stretch},
+	  res_stretch{ new float[res_stretch_sz] },
 	  post_mod{post_mod} {
 	
 	int indx{0};
 	for(int i{0}; i != ms.x_dim; ++i)
 		for(int j{0}; j != ms.z_dim; ++j, ++indx)
 			res_stretch[indx] = res_fill_func(i, j);
+}
+
+NoiseMods::NoiseMods(const NoiseMods& rhs)
+	: res_stretch_sz{ rhs.res_stretch_sz },
+	  res_stretch{ new float[res_stretch_sz] },
+	  x_stretch{ rhs.x_stretch },
+	  z_stretch{ rhs.z_stretch },
+	  post_mod{ rhs.post_mod } {
+	for(int i{0}; i != res_stretch_sz; ++i)
+		res_stretch[i] = rhs.res_stretch[i];
+}
+
+NoiseMods& NoiseMods::operator=(const NoiseMods &rhs){
+	if (res_stretch_sz == rhs.res_stretch_sz)
+		for(int i{0}; i != res_stretch_sz; ++i)
+			res_stretch[i] = rhs.res_stretch[i];
+	else {
+		res_stretch_sz = rhs.res_stretch_sz;
+		delete[] res_stretch;
+		res_stretch = new float[res_stretch_sz];
+	}
+	
+	res_stretch_sz = rhs.res_stretch_sz;
+	res_stretch = rhs.res_stretch;
+	x_stretch = rhs.x_stretch;
+	z_stretch = rhs.z_stretch;
+	return *this;
+}
+
+NoiseMods::~NoiseMods() {
+	delete[] res_stretch;
 }
 
 bgfx::ShaderHandle load_shader(const char *name) {
@@ -80,7 +112,7 @@ void add_normal(PosNormalColorVertex *vert_target,
     fl_target[5] = vc_norm.z;
 }
 
-float get_noise_mdfd(int res_indx, float x, float z, FastNoise fn, NoiseMods nm) {
+float get_noise_mdfd(int res_indx, float x, float z, FastNoise fn, const NoiseMods& nm) {
 	return nm.post_mod(nm.res_stretch[res_indx]*fn.GetNoise(nm.x_stretch*x, nm.z_stretch*z));
 }
 
