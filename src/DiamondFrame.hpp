@@ -8,10 +8,10 @@ namespace worldWp {
 
 class DiamondFrame : public Model<uint16_t> {
 public:
-	DiamondFrame(const util::PlaneSpecs& ms);
+	DiamondFrame(const util::PlaneSpecs& ms, uint32_t abgr);
 private:
 	void add_indzs();
-	void add_verts(bx::Vec3 dims, bx::Vec3 center);
+	void add_verts(bx::Vec3 dims, bx::Vec3 center, uint32_t abgr);
 };
 
 };
