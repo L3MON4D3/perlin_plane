@@ -17,7 +17,7 @@
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
 
-const worldWp::util::PlaneSpecs specs {10, 10, 9};
+const worldWp::util::PlaneSpecs specs {90, 90, 1};
 
 const std::function<float(int x, int z)> edge_smooth_mod { [](int x, int z){
     	return std::sin(float(x)/(specs.x_dim-1)*bx::kPi)
@@ -55,7 +55,7 @@ GLFWwindow* create_window(int width, int height) {
     glfwGetWindowSize(window, &width, &height);
     init.resolution.height = height;
     init.resolution.width = width;
-    init.resolution.reset = BGFX_RESET_MSAA_X2;
+    init.resolution.reset = BGFX_RESET_MSAA_X4;
 
     bgfx::init(init);
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     worldWp::util::PosNormalColorVertex::init();
 
     const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x282828ff, 1.0f, 0);
+    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xffffffff, 1.0f, 0);
 
     VertexBufferHandle vbh = plane.getVBufferHandle();
     //VertexBufferHandle vbh = createVertexBuffer(
@@ -102,7 +102,11 @@ int main(int argc, char** argv) {
 
     ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
     ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
-    ProgramHandle program = createProgram(vsh, fsh, true);
+    ProgramHandle program_simple = createProgram(vsh, fsh, true);
+
+    vsh = worldWp::util::load_shader("build/src/vs_height.bin");
+    fsh = worldWp::util::load_shader("build/src/fs_height.bin");
+	ProgramHandle program_height {createProgram(vsh, fsh, true)};
 
     touch(clearView);
 
@@ -148,7 +152,7 @@ int main(int argc, char** argv) {
 		vbh = plane.getVBufferHandle();
 
         bx::Vec3 at  {0, 0, 0};
-        bx::Vec3 eye {0, 70*2, 100*2};
+        bx::Vec3 eye {0, 25*2, 100*2};
 
         float view[16];
         bx::mtxLookAt(view, eye, at);
@@ -167,20 +171,20 @@ int main(int argc, char** argv) {
         touch(clearView);
 
         float mtx[16];
-        bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.001));
-
+        //bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.001));
+		bx::mtxRotateY(mtx, bx::kPiQuarter);
 		//submit plane+base.
         bgfx::setTransform(mtx);
         bgfx::setVertexBuffer(0, vbh);
         bgfx::setIndexBuffer(ibh);
-        bgfx::submit(clearView, program);
+        bgfx::submit(clearView, program_height);
 
 		bgfx::setState(BGFX_STATE_DEFAULT | frame.get_indzs_state());
 		//submit Frame.
 		bgfx::setTransform(mtx);
 		bgfx::setVertexBuffer(0, frame_vbh);
         bgfx::setIndexBuffer(frame_ibh);
-		bgfx::submit(clearView, program);
+		bgfx::submit(clearView, program_simple);
 
 		bgfx::frame();
     }
