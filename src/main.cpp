@@ -100,12 +100,12 @@ int main(int argc, char** argv) {
 	VertexBufferHandle frame_vbh{frame.getVBufferHandle()};
 	IndexBufferHandle frame_ibh{frame.getIBufferHandle()};
 
-    ShaderHandle vsh = worldWp::util::load_shader("build/src/vs_simple.bin");
-    ShaderHandle fsh = worldWp::util::load_shader("build/src/fs_simple.bin");
+    ShaderHandle vsh = worldWp::util::load_shader("build/shaders/vs_simple.bin");
+    ShaderHandle fsh = worldWp::util::load_shader("build/shaders/fs_simple.bin");
     ProgramHandle program_simple = createProgram(vsh, fsh, true);
 
-    vsh = worldWp::util::load_shader("build/src/vs_height.bin");
-    fsh = worldWp::util::load_shader("build/src/fs_height.bin");
+    vsh = worldWp::util::load_shader("build/shaders/vs_lines.bin");
+    fsh = worldWp::util::load_shader("build/shaders/fs_lines.bin");
 	ProgramHandle program_height {createProgram(vsh, fsh, true)};
 
     touch(clearView);
