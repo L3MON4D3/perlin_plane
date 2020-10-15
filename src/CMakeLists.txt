@@ -11,7 +11,7 @@ add_library(perlin
 )
 
 #names of sourcefile/binary.
-set(shaders height; simple)
+set(shaders lines; simple)
 #Shadertypes.
 set(type_long FRAGMENT; VERTEX)
 #prefix of sourcefile.
@@ -35,8 +35,8 @@ foreach(shader IN LISTS shaders)
 endforeach()
 
 add_custom_target(Shader ALL DEPENDS
-	../build/shaders/fs_height.bin
-	../build/shaders/vs_height.bin
+	../build/shaders/fs_lines.bin
+	../build/shaders/vs_lines.bin
 	../build/shaders/fs_simple.bin
 	../build/shaders/vs_simple.bin
 )
