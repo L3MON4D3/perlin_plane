@@ -20,7 +20,7 @@
 const worldWp::util::PlaneSpecs specs {90, 90, 1};
 
 const std::function<float(int x, int z)> edge_smooth_mod { [](int x, int z){
-    	return std::sin(float(x)/(specs.x_dim-1)*bx::kPi)
+		return std::sin(float(x)/(specs.x_dim-1)*bx::kPi)
 		      *std::sin(float(z)/(specs.z_dim-1)*bx::kPi)*80;
 }};
 
@@ -59,7 +59,7 @@ GLFWwindow* create_window(int width, int height) {
     glfwGetWindowSize(window, &width, &height);
     init.resolution.height = height;
     init.resolution.width = width;
-    init.resolution.reset = BGFX_RESET_MSAA_X4;
+    init.resolution.reset = BGFX_RESET_MSAA_X8;
 
     bgfx::init(init);
 
@@ -104,34 +104,34 @@ int main(int argc, char** argv) {
 	VertexBufferHandle frame_vbh{frame.getVBufferHandle()};
 	IndexBufferHandle frame_ibh{frame.getIBufferHandle()};
 
-    ShaderHandle vsh = worldWp::util::load_shader("build/shaders/vs_simple.bin");
-    ShaderHandle fsh = worldWp::util::load_shader("build/shaders/fs_simple.bin");
-    ProgramHandle program_simple = createProgram(vsh, fsh, true);
+	ShaderHandle vsh = worldWp::util::load_shader("build/shaders/vs_simple.bin");
+	ShaderHandle fsh = worldWp::util::load_shader("build/shaders/fs_simple.bin");
+	ProgramHandle program_simple = createProgram(vsh, fsh, true);
 
-    vsh = worldWp::util::load_shader("build/shaders/vs_lines.bin");
-    fsh = worldWp::util::load_shader("build/shaders/fs_lines.bin");
+	vsh = worldWp::util::load_shader("build/shaders/vs_lines.bin");
+	fsh = worldWp::util::load_shader("build/shaders/fs_lines.bin");
 	ProgramHandle program_height {createProgram(vsh, fsh, true)};
 
-    touch(clearView);
+	touch(clearView);
 
-    float pos {-15.0f};
+	float pos {-15.0f};
 
 	int frame_ctr{-1}, ctr{0};
 
 	int tran_length{800};
 	float* offset_noise;
-    while (!glfwWindowShouldClose(window)) {
+	while (!glfwWindowShouldClose(window)) {
 		++frame_ctr;
 		if (frame_ctr == tran_length)
 			frame_ctr = 0;
 		
-        glfwPollEvents();
-        int oldWidth = width, oldHeight = height;
-        glfwGetWindowSize(window, &width, &height);
-        if (width != oldWidth || height != oldHeight) {
-            reset(width, height, BGFX_RESET_VSYNC);
-            setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
-        }
+		glfwPollEvents();
+		int oldWidth = width, oldHeight = height;
+		glfwGetWindowSize(window, &width, &height);
+		if (width != oldWidth || height != oldHeight) {
+			reset(width, height, BGFX_RESET_VSYNC);
+			setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
+		}
 
 		if (frame_ctr == 0) {
 			fn.SetSeed(std::rand());
@@ -155,48 +155,48 @@ int main(int argc, char** argv) {
 		bgfx::destroy(vbh);
 		vbh = plane.getVBufferHandle();
 
-        bx::Vec3 at  {0, 0, 0};
-        bx::Vec3 eye {0, 25*2, 100*2};
-
-        float view[16];
-        bx::mtxLookAt(view, eye, at);
-
-        float proj[16];
-        bx::mtxProj(proj,
-            60.0f,
-            ((float)width)/height,
-            0.1f,
-            800.0f,
-            bgfx::getCaps()->homogeneousDepth);
-
-        bgfx::setViewTransform(clearView, view, proj);
-        bgfx::setViewRect(clearView, 0, 0, width, height);
-
-        touch(clearView);
-
-        float mtx[16];
-        //bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.001));
+		bx::Vec3 at  {0, 0, 0};
+		bx::Vec3 eye {0, 25*2, 100*2};
+		
+		float view[16];
+		bx::mtxLookAt(view, eye, at);
+		
+		float proj[16];
+		bx::mtxProj(proj,
+			60.0f,
+			((float)width)/height,
+			0.1f,
+			800.0f,
+			bgfx::getCaps()->homogeneousDepth);
+		
+		bgfx::setViewTransform(clearView, view, proj);
+		bgfx::setViewRect(clearView, 0, 0, width, height);
+		
+		touch(clearView);
+		
+		float mtx[16];
+		//bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.001));
 		bx::mtxRotateY(mtx, bx::kPiQuarter);
 		//submit plane+base.
-        bgfx::setTransform(mtx);
-        bgfx::setVertexBuffer(0, vbh);
-        bgfx::setIndexBuffer(ibh);
-        bgfx::submit(clearView, program_height);
+		bgfx::setTransform(mtx);
+		bgfx::setVertexBuffer(0, vbh);
+		bgfx::setIndexBuffer(ibh);
+		bgfx::submit(clearView, program_height);
 
 		bgfx::setState(BGFX_STATE_DEFAULT | frame.get_indzs_state());
 		//submit Frame.
 		bgfx::setTransform(mtx);
 		bgfx::setVertexBuffer(0, frame_vbh);
-        bgfx::setIndexBuffer(frame_ibh);
+		bgfx::setIndexBuffer(frame_ibh);
 		bgfx::submit(clearView, program_simple);
 
 		bgfx::frame();
-    }
+	}
 
 	delete offset_noise;
-    destroy(vbh);
-    destroy(ibh);
-    shutdown();
-    glfwTerminate();
-    return 0;
+	destroy(vbh);
+	destroy(ibh);
+	shutdown();
+	glfwTerminate();
+	return 0;
 }
