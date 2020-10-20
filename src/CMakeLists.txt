@@ -6,9 +6,9 @@ add_executable(worldWP
 	DiamondFrame.cpp
 )
 
-add_library(perlin
-    Perlin.cpp
-)
+#add_library(perlin
+#    Perlin.cpp
+#)
 
 #names of sourcefile/binary.
 set(shaders lines; simple)
