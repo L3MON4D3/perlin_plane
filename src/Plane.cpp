@@ -20,9 +20,11 @@ Plane::Plane(
   const util::PlaneSpecs& ms,
   const FastNoise& fn,
   const worldWp::util::NoiseMods& nm,
-  const uint32_t abgr
+  const uint32_t abgr,
+  const float base_start
 )
 	: Model{
+		//assign vbuf and ibuf-sizes in super-constructor.
 		(vbuf_indzs[0] = ms.x_dim*ms.z_dim*2) +
 		(vbuf_indzs[1] = vbuf_indzs[0] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4),
 
@@ -33,7 +35,7 @@ Plane::Plane(
 	  nm{ nm } {
 	add_plane_vertices(fn, abgr);
 	add_normals();
-	add_base_vertices(0, abgr);
+	add_base_vertices(base_start, abgr);
 	add_base_indizes();
 
 	//fill indzs.

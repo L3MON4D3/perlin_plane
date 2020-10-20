@@ -21,7 +21,8 @@ public:
 	  const util::PlaneSpecs& ms,
 	  const FastNoise& fn,
 	  const util::NoiseMods& nm,
-	  const uint32_t abgr );
+	  const uint32_t abgr,
+	  const float base_start );
 
 	void for_each_vertex(
 	  const std::function<void(util::PosNormalColorVertex&, int indx)>& fn );

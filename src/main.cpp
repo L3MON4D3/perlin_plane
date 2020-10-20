@@ -24,6 +24,10 @@ const std::function<float(int x, int z)> edge_smooth_mod { [](int x, int z){
 		      *std::sin(float(z)/(specs.z_dim-1)*bx::kPi)*80;
 }};
 
+const std::function<float(int x, int z)> res_fill_none { [](int x, int z) {
+	return 60;
+}};
+
 const std::function<float(float noise)> no_valley_mod { [](float noise){
 	return noise > 0 ? noise : 0;
 }};
@@ -67,35 +71,35 @@ std::ostream& operator<<(std::ostream& out, const bx::Vec3& v) {
 }
 
 int main(int argc, char** argv) {
-    //using so lines dont get too long.
-    using namespace bgfx;
-
-    FastNoise fn;
-    fn.SetNoiseType(FastNoise::Perlin);
-    fn.SetSeed(std::rand());
-    worldWp::Plane plane(specs, fn, {2, 2, specs, edge_smooth_mod, no_mod}, 0xffcccccc);
-
-	worldWp::DiamondFrame frame {specs, 0xff444444};
-    glfwInit();
-    glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
-
-    int width = 1000, height = 1000;
-    renderFrame();
-    GLFWwindow *window = create_window(width, height);
-
-    worldWp::util::PosNormalColorVertex::init();
-
-    const ViewId clearView = 0;
-    setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xffffffff, 1.0f, 0);
-
-    VertexBufferHandle vbh = plane.getVBufferHandle();
-    //VertexBufferHandle vbh = createVertexBuffer(
-    //    makeRef(cubeVertices, sizeof(cubeVertices)),
-    //    worldWp::PosNormalColorVertex::layout);
-
-    IndexBufferHandle ibh = plane.getIBufferHandle();
-    //IndexBufferHandle ibh = createIndexBuffer(
-    //	makeRef(cubeTriList, sizeof(cubeTriList)));
+	//using so lines dont get too long.
+	using namespace bgfx;
+	
+	FastNoise fn;
+	fn.SetNoiseType(FastNoise::Perlin);
+	fn.SetSeed(std::rand());
+	worldWp::Plane plane(specs, fn, {2, 2, specs, res_fill_none, no_mod}, 0xffcccccc, -40);
+	
+	worldWp::Frame frame {specs, 0xff444444};
+	glfwInit();
+	glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
+	
+	int width = 1000, height = 1000;
+	renderFrame();
+	GLFWwindow *window = create_window(width, height);
+	
+	worldWp::util::PosNormalColorVertex::init();
+	
+	const ViewId clearView = 0;
+	setViewClear(clearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xffffffff, 1.0f, 0);
+	
+	VertexBufferHandle vbh = plane.getVBufferHandle();
+	//VertexBufferHandle vbh = createVertexBuffer(
+	//    makeRef(cubeVertices, sizeof(cubeVertices)),
+	//    worldWp::PosNormalColorVertex::layout);
+	
+	IndexBufferHandle ibh = plane.getIBufferHandle();
+	//IndexBufferHandle ibh = createIndexBuffer(
+	//	makeRef(cubeTriList, sizeof(cubeTriList)));
 
 	VertexBufferHandle frame_vbh{frame.getVBufferHandle()};
 	IndexBufferHandle frame_ibh{frame.getIBufferHandle()};
