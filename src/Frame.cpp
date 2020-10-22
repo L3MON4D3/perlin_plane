@@ -71,7 +71,7 @@ void Frame::add_frame_vertices_2d(
 
 	//initialize all verices here, assign correct position later.
 	for(int i{0}; i != 12; ++i)
-		verts[start_pos+i] = {0,0,0, 0,1,0, abgr};
+		verts[start_pos+i] = {0,0,0, 0,0,0, abgr};
 
 	float* pos_f = ((float*)&pos);
 	float corners[4][2] {

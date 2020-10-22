@@ -113,7 +113,7 @@ void Plane::add_base_vertices(float y_start, const uint32_t abgr) {
 	 */
 	int start_vert{vbuf_indzs[0]};
 	for(int i{start_vert}; i != start_vert + (ms.x_dim-1+ms.z_dim-1)*2; ++i)
-		verts[i] = {0,y_start,0, 0,1,1, abgr};
+		verts[i] = {0,y_start,0, 0,0,0, abgr};
 	
 	const int dirs[2] {0,  2},
 	          dir_size[2] {ms.x_dim-1, ms.z_dim-1},
@@ -140,16 +140,16 @@ void Plane::add_base_vertices(float y_start, const uint32_t abgr) {
 
 	//add vertex at 0 (see above) with different color for underside of base.
 	verts[indx] = {corners[0][0], y_start, corners[0][1],
-	                     0,.5,1,
+	                     0,0,0,
 	                     abgr};
 	verts[++indx] = {corners[1][0], y_start, corners[1][1],
-	                     0,.5,1,
+	                     0,0,0,
 	                     abgr};
 	verts[++indx] = {corners[2][0], y_start, corners[2][1],
-	                     0,.5,1,
+	                     0,0,0,
 	                     abgr};
 	verts[++indx] = {corners[3][0], y_start, corners[3][1],
-	                     0,.5,1,
+	                     0,0,0,
 	                     abgr};
 }
 

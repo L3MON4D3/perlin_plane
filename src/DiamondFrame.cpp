@@ -43,7 +43,7 @@ void DiamondFrame::add_verts(bx::Vec3 dims, bx::Vec3 center, uint32_t abgr) {
 			center.x + dims.x*frame_vertices[i][0],
 			center.y + dims.y*frame_vertices[i][1],
 			center.z + dims.z*frame_vertices[i][2],
-			0,1,0, abgr
+			0,0,0, abgr
 		};
 }
 
