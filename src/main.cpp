@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 
 	vsh = worldWp::util::load_shader("build/shaders/vs_lines.bin");
 	fsh = worldWp::util::load_shader("build/shaders/fs_lines.bin");
-	ProgramHandle program_height {createProgram(vsh, fsh, true)};
+	ProgramHandle program_lines {createProgram(vsh, fsh, true)};
 
 	touch(clearView);
 
@@ -181,10 +181,10 @@ int main(int argc, char** argv) {
 		bgfx::setTransform(mtx);
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
-		bgfx::submit(clearView, program_height);
+		bgfx::submit(clearView, program_lines);
 
-		bgfx::setState(BGFX_STATE_DEFAULT | frame.get_indzs_state());
 		//submit Frame.
+		bgfx::setState(BGFX_STATE_DEFAULT | frame.get_indzs_state());
 		bgfx::setTransform(mtx);
 		bgfx::setVertexBuffer(0, frame_vbh);
 		bgfx::setIndexBuffer(frame_ibh);
