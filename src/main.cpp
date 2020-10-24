@@ -48,6 +48,11 @@ GLFWwindow* create_window(int width, int height) {
 	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     GLFWwindow *window =
         glfwCreateWindow(width, height, "worldWp", nullptr, nullptr);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	if (glfwRawMouseMotionSupported())
+		glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+	
 	//glfwMakeContextCurrent(window);
 
     bgfx::Init init;
@@ -119,7 +124,16 @@ int main(int argc, char** argv) {
 	int frame_ctr{-1}, ctr{0};
 
 	int tran_length{800};
-	float* offset_noise;
+	float *offset_noise;
+
+	//For tracking mouse cursor while holding lmb.
+	double mouse_pos_start[2];
+	double mouse_pos_current[2];
+	double mouse_offset[2];
+	double mouse_offset_last[2] = {0, 0};
+
+	//left mouse button.
+	bool lmb_pressed {false};
 	while (!glfwWindowShouldClose(window)) {
 		++frame_ctr;
 		if (frame_ctr == tran_length)
@@ -131,6 +145,22 @@ int main(int argc, char** argv) {
 		if (width != oldWidth || height != oldHeight) {
 			reset(width, height, BGFX_RESET_VSYNC);
 			setViewRect(clearView, 0, 0, BackbufferRatio::Equal);
+		}
+
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+			glfwGetCursorPos(window, &mouse_pos_current[0], &mouse_pos_current[1]);
+			if (!lmb_pressed)
+				//First frame with Mouse press, assign pos_start.
+				glfwGetCursorPos(window, &mouse_pos_start[0], &mouse_pos_start[1]);
+			lmb_pressed = true;
+			//Can probably be done better.
+			mouse_offset[0] = mouse_pos_current[0] - mouse_pos_start[0] + mouse_offset_last[0];
+			mouse_offset[1] = mouse_pos_current[1] - mouse_pos_start[1] + mouse_offset_last[1];
+		} else {
+			//save current offset so transforms dont get reset to zero on new click.
+			lmb_pressed = false;
+			mouse_offset_last[0] = mouse_offset[0];
+			mouse_offset_last[1] = mouse_offset[1];
 		}
 
 		if (frame_ctr == 0) {
@@ -175,8 +205,12 @@ int main(int argc, char** argv) {
 		touch(clearView);
 		
 		float mtx[16];
-		//bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.001));
-		bx::mtxRotateY(mtx, bx::kPiQuarter);
+		bx::mtxRotateXY(mtx,
+			-bx::kPiQuarter*mouse_offset[1]*0.01,
+			bx::kPiQuarter*mouse_offset[0]*0.01);
+		//bx::mtxRotateY(mtx, bx::kPiQuarter*(pos+=.01));
+		//bx::mtxRotateY(mtx, bx::kPiQuarter);
+
 		//submit plane+base.
 		bgfx::setTransform(mtx);
 		bgfx::setVertexBuffer(0, vbh);
