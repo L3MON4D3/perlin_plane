@@ -26,17 +26,21 @@ Plane::Plane(
 	: Model{
 		//assign vbuf and ibuf-sizes in super-constructor.
 		(vbuf_indzs[0] = ms.x_dim*ms.z_dim*2) +
-		(vbuf_indzs[1] = vbuf_indzs[0] + (ms.x_dim-1 + ms.z_dim-1)*2 + 4),
+		(vbuf_indzs[1] = vbuf_indzs[0] +
+			(base_start != 0 ? (ms.x_dim-1 + ms.z_dim-1)*2 + 4 : 0)),
 
 		(ibuf_indzs[0] = (ms.x_dim-1)*(ms.z_dim-1)*2*2*3) +
-		(ibuf_indzs[1] = ibuf_indzs[0] + ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6),
+		(ibuf_indzs[1] = ibuf_indzs[0] +
+			(base_start != 0 ? ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6 : 0)),
 		0x0000000000000000 },
 	  ms{ ms },
 	  nm{ nm } {
 	add_plane_vertices(fn, abgr);
 	add_normals();
-	add_base_vertices(base_start, abgr);
-	add_base_indizes();
+	if (base_start != 0) {
+		add_base_vertices(base_start, abgr);
+		add_base_indizes();
+	}
 
 	//fill indzs.
 	int offset{ ms.x_dim*ms.z_dim };
