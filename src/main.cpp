@@ -127,10 +127,9 @@ int main(int argc, char** argv) {
 	float *offset_noise;
 
 	//For tracking mouse cursor while holding lmb.
-	double mouse_pos_start[2];
+	double mouse_pos_last[2];
 	double mouse_pos_current[2];
 	double mouse_offset[2];
-	double mouse_offset_last[2] = {0, 0};
 
 	//left mouse button.
 	bool lmb_pressed {false};
@@ -149,18 +148,21 @@ int main(int argc, char** argv) {
 
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			glfwGetCursorPos(window, &mouse_pos_current[0], &mouse_pos_current[1]);
-			if (!lmb_pressed)
-				//First frame with Mouse press, assign pos_start.
-				glfwGetCursorPos(window, &mouse_pos_start[0], &mouse_pos_start[1]);
-			lmb_pressed = true;
-			//Can probably be done better.
-			mouse_offset[0] = mouse_pos_current[0] - mouse_pos_start[0] + mouse_offset_last[0];
-			mouse_offset[1] = mouse_pos_current[1] - mouse_pos_start[1] + mouse_offset_last[1];
+			if (!lmb_pressed) {
+				//initial press of lmb, there is no last pos, dont let model spin around
+				//randomly by assigning current pos to last pos.
+				lmb_pressed = true;
+				mouse_pos_last[0] = mouse_pos_current[0];
+				mouse_pos_last[1] = mouse_pos_current[1];
+			}
+			mouse_offset[0] += mouse_pos_current[0] - mouse_pos_last[0];
+			mouse_offset[1] += mouse_pos_current[1] - mouse_pos_last[1];
+
+			//move crrt pos to last for next frame.
+			mouse_pos_last[0] = mouse_pos_current[0];
+			mouse_pos_last[1] = mouse_pos_current[1];
 		} else {
-			//save current offset so transforms dont get reset to zero on new click.
 			lmb_pressed = false;
-			mouse_offset_last[0] = mouse_offset[0];
-			mouse_offset_last[1] = mouse_offset[1];
 		}
 
 		if (frame_ctr == 0) {
