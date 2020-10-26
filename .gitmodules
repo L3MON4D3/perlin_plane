@@ -1,6 +1,6 @@
-[submodule "libs/FastNoise"]
-	path = libs/FastNoise
-	url = git@github.com:Auburn/FastNoise.git
 [submodule "libs/bgfx.cmake"]
 	path = libs/bgfx.cmake
 	url = git@github.com:yaz0r/bgfx.cmake.git
+[submodule "libs/FastNoise"]
+	path = libs/FastNoise
+	url = git@github.com:L3MON4D3/FastNoise.git

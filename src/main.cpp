@@ -64,7 +64,7 @@ GLFWwindow* create_window(int width, int height) {
     glfwGetWindowSize(window, &width, &height);
     init.resolution.height = height;
     init.resolution.width = width;
-    init.resolution.reset = BGFX_RESET_MSAA_X8;
+    init.resolution.reset = BGFX_RESET_VSYNC;
 
     bgfx::init(init);
 
@@ -82,9 +82,9 @@ int main(int argc, char** argv) {
 	FastNoise fn;
 	fn.SetNoiseType(FastNoise::Perlin);
 	fn.SetSeed(std::rand());
-	worldWp::Plane plane(specs, fn, {2, 2, specs, res_fill_none, no_mod}, 0xffcccccc, -40);
+	worldWp::Plane plane(specs, fn, {2, 2, specs, edge_smooth_mod, no_mod}, 0xffcccccc, 0);
 	
-	worldWp::Frame frame {specs, 0xff444444};
+	worldWp::DiamondFrame frame {specs, 0xff444444};
 	glfwInit();
 	glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
 	
