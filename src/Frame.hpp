@@ -10,7 +10,7 @@ namespace worldWp {
 
 class Frame : public Model<uint16_t> {
 public:
-	Frame(const util::PlaneSpecs& ms, const uint32_t abgr);
+	Frame(const util::PlaneSpecs& ms, const uint32_t abgr, float y_start, float height);
 private:
 	util::PlaneSpecs ms;
 

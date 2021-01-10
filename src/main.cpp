@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 	fn.SetSeed(std::rand());
 	worldWp::Plane plane(specs, fn, {2, 2, specs, edge_smooth_mod, no_mod}, 0xffcccccc, 0);
 	
-	worldWp::DiamondFrame frame {specs, 0xff444444};
+	worldWp::Frame frame {specs, 0xff444444, -40.02, 90};
 	glfwInit();
 	glfwSetErrorCallback(worldWp::util::glfw_errorCallback);
 	
