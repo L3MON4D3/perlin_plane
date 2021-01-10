@@ -27,11 +27,11 @@ Plane::Plane(
 		//assign vbuf and ibuf-sizes in super-constructor.
 		(vbuf_indzs[0] = ms.x_dim*ms.z_dim*2) +
 		(vbuf_indzs[1] = vbuf_indzs[0] +
-			(base_start != 0 ? (ms.x_dim-1 + ms.z_dim-1)*2 + 4 : 0)),
+		(base_start != 0 ? (ms.x_dim-1 + ms.z_dim-1)*2 + 4 : 0)),
 
 		(ibuf_indzs[0] = (ms.x_dim-1)*(ms.z_dim-1)*2*2*3) +
 		(ibuf_indzs[1] = ibuf_indzs[0] +
-			(base_start != 0 ? ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6 : 0)),
+		(base_start != 0 ? ((ms.x_dim-1)+(ms.z_dim-1))*2*2*3 + 6 : 0)),
 		0x0000000000000000 },
 	  ms{ ms },
 	  nm{ nm } {
@@ -103,10 +103,10 @@ void Plane::add_plane_vertices(const FastNoise& fn, const uint32_t abgr) {
 		for(int j {0}; j != ms.z_dim*ms.res; j+=ms.res, ++indx)
 			verts[indx+offset] =
 			verts[indx       ] = { float(i-(ms.x_dim-1)*ms.res/2.0),
-			                             util::get_noise_mdfd(indx, i, j, fn, nm),
-			                             float(j-(ms.z_dim-1)*ms.res/2.0), 
-			                             0, 0, 0,
-			                             abgr };
+			                       util::get_noise_mdfd(indx, i, j, fn, nm),
+			                       float(j-(ms.z_dim-1)*ms.res/2.0), 
+			                       0, 0, 0,
+			                       abgr };
 }
 
 void Plane::add_base_vertices(float y_start, const uint32_t abgr) {
